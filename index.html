@@ -1,0 +1,8020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#11161d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="campusnow-icon.svg" type="image/svg+xml">
+<title>CampusNow | Know Before You Walk</title>
+
+<style>
+/* =========================================================
+   CAMPUSNOW V1.0
+   Frontend-only demo
+   ========================================================= */
+
+:root {
+    --bg: #11161d;
+    --bg-soft: #151b23;
+    --card: rgba(27, 34, 44, 0.82);
+    --card-solid: #1b222c;
+    --card-hover: #202936;
+
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.13);
+
+    --text: #eef3f7;
+    --text-soft: #aab5c1;
+    --text-muted: #737f8c;
+
+    --mint: #61e6b0;
+    --mint-soft: rgba(97,230,176,0.12);
+
+    --blue: #7ea7ff;
+    --blue-soft: rgba(126,167,255,0.12);
+
+    --violet: #ad91ff;
+    --violet-soft: rgba(173,145,255,0.12);
+
+    --amber: #f4c76a;
+    --amber-soft: rgba(244,199,106,0.12);
+
+    --orange: #f49a67;
+    --orange-soft: rgba(244,154,103,0.12);
+
+    --red: #ff7373;
+    --red-soft: rgba(255,115,115,0.12);
+
+    --shadow: 0 18px 60px rgba(0,0,0,0.25);
+    --radius: 22px;
+    --radius-small: 13px;
+
+    --max: 1240px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background:
+        radial-gradient(circle at 8% 5%, rgba(97,230,176,0.075), transparent 28%),
+        radial-gradient(circle at 90% 15%, rgba(126,167,255,0.07), transparent 30%),
+        radial-gradient(circle at 50% 80%, rgba(173,145,255,0.045), transparent 30%),
+        var(--bg);
+
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+::selection {
+    background: rgba(97,230,176,0.22);
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+::-webkit-scrollbar {
+    width: 9px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0e1318;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #303a46;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #465361;
+}
+
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+.container {
+    width: min(var(--max), calc(100% - 40px));
+    margin: 0 auto;
+}
+
+.section {
+    padding: 90px 0;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.section-kicker {
+    color: var(--mint);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.72rem;
+    font-weight: 800;
+    margin-bottom: 9px;
+}
+
+.section-title {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+}
+
+.section-description {
+    color: var(--text-soft);
+    max-width: 610px;
+    line-height: 1.65;
+    margin-top: 10px;
+}
+
+.muted {
+    color: var(--text-muted);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    color: transparent !important;
+    background: rgba(255,255,255,0.06) !important;
+    border-color: transparent !important;
+}
+
+.skeleton::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    animation: skeleton-shimmer 1.3s infinite;
+}
+
+@keyframes skeleton-shimmer {
+    to {
+        transform: translateX(100%);
+    }
+}
+
+.connection-strip {
+    border-bottom: 1px solid var(--border);
+    background: rgba(27,34,44,0.72);
+}
+
+.connection-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 34px;
+    color: var(--text-soft);
+    font-size: 0.7rem;
+}
+
+.connection-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--mint);
+    font-weight: 800;
+}
+
+.connection-state::before {
+    width: 7px;
+    height: 7px;
+    content: "";
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 12px currentColor;
+}
+
+.connection-state.offline {
+    color: var(--amber);
+}
+
+.connection-note {
+    color: var(--text-muted);
+    text-align: right;
+}
+
+.context-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 13px;
+    color: var(--text-soft);
+    font-size: 0.72rem;
+}
+
+.context-badge strong {
+    color: var(--mint);
+}
+
+.change-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+    padding: 14px 16px;
+    border: 1px solid rgba(126,167,255,0.16);
+    border-radius: var(--radius-small);
+    background: var(--blue-soft);
+}
+
+.change-strip-title {
+    color: var(--blue);
+    font-size: 0.72rem;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.change-strip-text {
+    margin-top: 4px;
+    color: var(--text-soft);
+    font-size: 0.78rem;
+}
+
+.change-dismiss {
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.freshness-chip {
+    cursor: pointer;
+}
+
+.freshness-fresh {
+    color: var(--mint);
+}
+
+.freshness-aging {
+    color: var(--amber);
+}
+
+.freshness-stale {
+    color: var(--red);
+}
+
+.confidence-popover {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 210;
+    width: min(360px, calc(100% - 44px));
+    padding: 16px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-small);
+    background: #1b222c;
+    box-shadow: var(--shadow);
+}
+
+.confidence-popover-title {
+    color: var(--mint);
+    font-weight: 850;
+}
+
+.confidence-popover-text {
+    margin-top: 6px;
+    color: var(--text-soft);
+    font-size: 0.78rem;
+    line-height: 1.55;
+}
+
+.mobile-bottom-nav {
+    display: none;
+}
+
+.data-refresh-note {
+    margin-top: 7px;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+}
+
+.updates-preview {
+    display: grid;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.campus-update-card {
+    position: relative;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-small);
+    background: rgba(255,255,255,0.025);
+    transition: 0.2s ease;
+}
+
+.campus-update-card:hover {
+    border-color: var(--border-strong);
+    background: var(--card-hover);
+    transform: translateY(-2px);
+}
+
+.campus-update-card.urgent {
+    border-color: rgba(244,199,106,0.28);
+    background: linear-gradient(135deg, rgba(244,199,106,0.09), rgba(255,255,255,0.02));
+}
+
+.campus-update-top,
+.campus-update-meta,
+.campus-update-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.campus-update-top {
+    align-items: flex-start;
+}
+
+.campus-update-alert {
+    margin-bottom: 6px;
+    color: var(--amber);
+    font-size: 0.68rem;
+    font-weight: 850;
+}
+
+.campus-update-type {
+    color: var(--text-muted);
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.campus-update-title {
+    margin-top: 4px;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 850;
+}
+
+.campus-update-date {
+    flex-shrink: 0;
+    color: var(--text-soft);
+    font-size: 0.76rem;
+    text-align: right;
+}
+
+.campus-update-details {
+    margin-top: 8px;
+    color: var(--text-soft);
+    font-size: 0.76rem;
+    line-height: 1.5;
+}
+
+.campus-update-meta {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-top: 13px;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+}
+
+.update-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 850;
+}
+
+.update-state.reported {
+    color: var(--amber);
+    background: var(--amber-soft);
+}
+
+.update-state.supported {
+    color: var(--blue);
+    background: var(--blue-soft);
+}
+
+.update-state.confirmed {
+    color: var(--mint);
+    background: var(--mint-soft);
+}
+
+.update-state.disputed {
+    color: var(--red);
+    background: var(--red-soft);
+}
+
+.campus-update-actions {
+    justify-content: flex-start;
+    margin-top: 14px;
+}
+
+.update-empty {
+    padding: 20px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-small);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    line-height: 1.55;
+}
+
+.update-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 13px;
+}
+
+.update-form-full {
+    grid-column: 1 / -1;
+}
+
+.update-vote-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.update-vote-row .btn {
+    flex: 1;
+    min-width: 170px;
+}
+
+.update-explanation {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 11px;
+    background: rgba(255,255,255,0.035);
+    color: var(--text-soft);
+    font-size: 0.74rem;
+    line-height: 1.55;
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
+.nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 74px;
+
+    background: rgba(14,18,24,0.76);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+
+    border-bottom: 1px solid rgba(255,255,255,0.055);
+}
+
+.nav-inner {
+    height: 100%;
+    width: min(var(--max), calc(100% - 40px));
+    margin: 0 auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 850;
+    letter-spacing: -0.03em;
+    font-size: 1.08rem;
+}
+
+.logo-mark {
+    width: 31px;
+    height: 31px;
+    border-radius: 10px;
+
+    display: grid;
+    place-items: center;
+
+    background:
+        linear-gradient(135deg, rgba(97,230,176,0.25), rgba(126,167,255,0.2));
+
+    border: 1px solid rgba(255,255,255,0.09);
+    box-shadow: 0 0 25px rgba(97,230,176,0.09);
+}
+
+.logo-mark span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--mint);
+    box-shadow: 0 0 15px rgba(97,230,176,0.6);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-link {
+    padding: 9px 13px;
+    color: var(--text-soft);
+    border-radius: 10px;
+    font-size: 0.88rem;
+    transition: 0.2s ease;
+}
+
+.nav-link:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.05);
+}
+
+.nav-mobile-btn {
+    display: none;
+
+    width: 42px;
+    height: 42px;
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.035);
+    color: var(--text);
+}
+
+.mobile-menu {
+    display: none;
+    position: absolute;
+    top: 74px;
+    left: 0;
+    right: 0;
+
+    padding: 10px 20px 18px;
+
+    background: rgba(17,22,29,0.97);
+    border-bottom: 1px solid var(--border);
+}
+
+.mobile-menu.open {
+    display: block;
+}
+
+.mobile-menu a {
+    display: block;
+    padding: 13px 10px;
+    color: var(--text-soft);
+    border-radius: 10px;
+}
+
+.mobile-menu a:hover {
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+}
+
+/* =========================================================
+   DEMO BANNER
+   ========================================================= */
+
+.demo-banner {
+    border-bottom: 1px solid rgba(126,167,255,0.1);
+    background: rgba(126,167,255,0.045);
+}
+
+.demo-inner {
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    color: #b7c7e9;
+    font-size: 0.76rem;
+}
+
+.demo-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--blue);
+    box-shadow: 0 0 10px rgba(126,167,255,0.6);
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero {
+    position: relative;
+    padding: 82px 0 65px;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    left: -230px;
+    top: -160px;
+
+    background: radial-gradient(circle, rgba(97,230,176,0.07), transparent 68%);
+    pointer-events: none;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    right: -280px;
+    top: -220px;
+
+    background: radial-gradient(circle, rgba(126,167,255,0.06), transparent 68%);
+    pointer-events: none;
+}
+
+.hero-grid {
+    position: relative;
+    z-index: 1;
+
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 55px;
+    align-items: center;
+}
+
+.live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 7px 11px;
+    border-radius: 999px;
+
+    background: rgba(97,230,176,0.07);
+    border: 1px solid rgba(97,230,176,0.12);
+
+    color: #b7ead6;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+}
+
+.live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--mint);
+    box-shadow: 0 0 12px rgba(97,230,176,0.75);
+    animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.35);
+        opacity: 0.55;
+    }
+}
+
+.hero-title {
+    margin-top: 22px;
+    max-width: 730px;
+
+    font-size: clamp(3.1rem, 7vw, 6.3rem);
+    line-height: 0.91;
+    letter-spacing: -0.075em;
+}
+
+.hero-title span {
+    color: var(--mint);
+}
+
+.hero-subtitle {
+    margin-top: 24px;
+    max-width: 610px;
+
+    color: var(--text-soft);
+    line-height: 1.7;
+    font-size: 1.02rem;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 11px;
+    margin-top: 30px;
+}
+
+.btn {
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 12px 16px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    font-weight: 750;
+    font-size: 0.86rem;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: var(--mint);
+    color: #0b1712;
+    box-shadow: 0 8px 30px rgba(97,230,176,0.11);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 12px 35px rgba(97,230,176,0.18);
+}
+
+.btn-secondary {
+    background: rgba(255,255,255,0.045);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: var(--border-strong);
+}
+
+.btn-small {
+    padding: 9px 12px;
+    font-size: 0.76rem;
+}
+
+.btn-danger {
+    background: var(--red-soft);
+    border-color: rgba(255,115,115,0.15);
+    color: #ffabab;
+}
+
+/* =========================================================
+   LIVE CAMPUS PANEL
+   ========================================================= */
+
+.hero-panel {
+    border: 1px solid var(--border);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)),
+        rgba(23,29,37,0.84);
+
+    border-radius: 26px;
+    padding: 22px;
+
+    box-shadow: var(--shadow);
+}
+
+.panel-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.panel-label {
+    color: var(--text-muted);
+    font-size: 0.73rem;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    font-weight: 800;
+}
+
+.clock {
+    color: var(--text-soft);
+    font-size: 0.76rem;
+}
+
+.timetable-main {
+    padding: 20px;
+    border-radius: 18px;
+
+    background:
+        radial-gradient(circle at 90% 0%, rgba(126,167,255,0.09), transparent 45%),
+        rgba(255,255,255,0.035);
+
+    border: 1px solid var(--border);
+}
+
+.timetable-state {
+    font-size: 1.35rem;
+    font-weight: 820;
+    letter-spacing: -0.03em;
+}
+
+.timetable-detail {
+    margin-top: 8px;
+    color: var(--text-soft);
+    line-height: 1.5;
+    font-size: 0.86rem;
+}
+
+.timetable-progress {
+    margin-top: 17px;
+    height: 6px;
+    background: rgba(255,255,255,0.065);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.timetable-progress-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--mint), var(--blue));
+    transition: width 0.5s ease;
+}
+
+.timetable-periods {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 16px;
+}
+
+.period-pill {
+    padding: 7px 3px;
+    text-align: center;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.025);
+    color: var(--text-muted);
+    font-size: 0.62rem;
+}
+
+.period-pill.active {
+    color: #07150f;
+    background: var(--mint);
+    font-weight: 800;
+}
+
+/* =========================================================
+   SNAPSHOT
+   ========================================================= */
+
+.snapshot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 13px;
+}
+
+.snapshot-card {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.028);
+    border-radius: 17px;
+    padding: 18px;
+
+    transition: 0.22s ease;
+}
+
+.snapshot-card:hover {
+    transform: translateY(-3px);
+    background: rgba(255,255,255,0.045);
+}
+
+.snapshot-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+
+    background: var(--mint-soft);
+    color: var(--mint);
+    margin-bottom: 14px;
+}
+
+.snapshot-value {
+    font-size: 1.65rem;
+    font-weight: 850;
+    letter-spacing: -0.05em;
+}
+
+.snapshot-label {
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+/* =========================================================
+   LAB CONTROLS
+   ========================================================= */
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.search-wrap {
+    flex: 1;
+    min-width: 230px;
+    position: relative;
+}
+
+.search-wrap input {
+    width: 100%;
+    padding: 12px 14px 12px 39px;
+
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.035);
+
+    color: var(--text);
+    outline: none;
+}
+
+.search-wrap input::placeholder {
+    color: var(--text-muted);
+}
+
+.search-wrap input:focus {
+    border-color: rgba(97,230,176,0.35);
+    box-shadow: 0 0 0 3px rgba(97,230,176,0.06);
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.filter-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 9px 12px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.025);
+
+    font-size: 0.73rem;
+    font-weight: 700;
+
+    transition: 0.2s ease;
+}
+
+.filter-btn:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.05);
+}
+
+.filter-btn.active {
+    background: var(--mint-soft);
+    border-color: rgba(97,230,176,0.18);
+    color: var(--mint);
+}
+
+.sort-select {
+    padding: 10px 12px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: #1b222c;
+    color: var(--text-soft);
+
+    outline: none;
+}
+
+/* =========================================================
+   LAB GRID
+   ========================================================= */
+
+.lab-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.lab-card {
+    position: relative;
+
+    border: 1px solid var(--border);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015)),
+        var(--card);
+
+    border-radius: var(--radius);
+    padding: 22px;
+
+    transition:
+        transform 0.23s ease,
+        border 0.23s ease,
+        background 0.23s ease,
+        box-shadow 0.23s ease;
+
+    overflow: hidden;
+}
+
+.lab-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background:
+        radial-gradient(circle at 90% 0%, rgba(97,230,176,0.06), transparent 35%);
+}
+
+.lab-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-strong);
+    background: var(--card-hover);
+    box-shadow: 0 18px 45px rgba(0,0,0,0.2);
+}
+
+.lab-top {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.lab-title-wrap {
+    min-width: 0;
+}
+
+.lab-name {
+    font-size: 1.08rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.lab-location {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    margin-top: 4px;
+}
+
+.status-pill {
+    flex-shrink: 0;
+
+    padding: 6px 9px;
+    border-radius: 999px;
+
+    font-size: 0.65rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.status-free {
+    color: #9ef0c9;
+    background: var(--mint-soft);
+}
+
+.status-busy {
+    color: #f6d58b;
+    background: var(--amber-soft);
+}
+
+.status-full {
+    color: #ff9e9e;
+    background: var(--red-soft);
+}
+
+.status-exam {
+    color: #c8b8ff;
+    background: var(--violet-soft);
+}
+
+.status-closed {
+    color: #aeb7c0;
+    background: rgba(255,255,255,0.06);
+}
+
+.lab-percent-row {
+    position: relative;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+
+    margin-top: 26px;
+}
+
+.lab-percent {
+    font-size: 3.05rem;
+    font-weight: 900;
+    letter-spacing: -0.075em;
+    line-height: 0.9;
+}
+
+.lab-percent-label {
+    color: var(--text-muted);
+    font-size: 0.69rem;
+    margin-bottom: 3px;
+}
+
+.percent-track {
+    height: 7px;
+    margin-top: 15px;
+
+    background: rgba(255,255,255,0.06);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.percent-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--mint), #7fd6ff);
+}
+
+.lab-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 17px;
+}
+
+.meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    padding: 6px 8px;
+    border-radius: 8px;
+
+    background: rgba(255,255,255,0.035);
+    color: var(--text-soft);
+
+    font-size: 0.67rem;
+}
+
+.meta-chip strong {
+    color: var(--text);
+}
+
+.prediction {
+    margin-top: 16px;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    padding: 10px 11px;
+    border-radius: 11px;
+
+    background: var(--blue-soft);
+    border: 1px solid rgba(126,167,255,0.1);
+}
+
+.prediction-icon {
+    width: 27px;
+    height: 27px;
+    border-radius: 8px;
+
+    display: grid;
+    place-items: center;
+
+    background: rgba(126,167,255,0.11);
+    color: var(--blue);
+}
+
+.prediction-text {
+    min-width: 0;
+}
+
+.prediction-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #bfd0f3;
+}
+
+.prediction-sub {
+    color: var(--text-muted);
+    font-size: 0.64rem;
+    margin-top: 2px;
+}
+
+.trend-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+}
+
+.trend {
+    font-size: 0.69rem;
+    font-weight: 750;
+}
+
+.trend-up {
+    color: var(--mint);
+}
+
+.trend-stable {
+    color: var(--blue);
+}
+
+.trend-down {
+    color: var(--amber);
+}
+
+.confidence {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.card-actions .btn {
+    flex: 1;
+}
+
+.no-results {
+    padding: 45px 20px;
+    text-align: center;
+
+    border: 1px dashed var(--border-strong);
+    border-radius: 18px;
+    color: var(--text-muted);
+    grid-column: 1 / -1;
+}
+
+/* =========================================================
+   WEEKLY PATTERN
+   ========================================================= */
+
+.week-shell {
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: rgba(255,255,255,0.025);
+    padding: 18px;
+}
+
+.week-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 7px;
+}
+
+.day-btn {
+    padding: 13px 6px;
+
+    border: 1px solid transparent;
+    border-radius: 12px;
+
+    background: rgba(255,255,255,0.025);
+    color: var(--text-muted);
+    text-align: center;
+
+    transition: 0.2s ease;
+}
+
+.day-btn:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.day-btn.active {
+    background: var(--mint-soft);
+    border-color: rgba(97,230,176,0.16);
+    color: var(--mint);
+}
+
+.day-name {
+    display: block;
+    font-weight: 800;
+    font-size: 0.7rem;
+}
+
+.day-date {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.65rem;
+}
+
+.day-event-dot {
+    display: block;
+    width: 5px;
+    height: 5px;
+    margin: 7px auto 0;
+
+    border-radius: 50%;
+    background: var(--amber);
+}
+
+.week-detail {
+    margin-top: 16px;
+    padding: 18px;
+
+    border-radius: 16px;
+    background: rgba(255,255,255,0.025);
+}
+
+.week-detail-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.week-detail-title {
+    font-weight: 800;
+}
+
+.week-detail-note {
+    color: var(--text-soft);
+    font-size: 0.8rem;
+    line-height: 1.55;
+    margin-top: 8px;
+}
+
+.sample-label {
+    padding: 5px 8px;
+    border-radius: 8px;
+    background: var(--amber-soft);
+    color: #e8c879;
+    font-size: 0.61rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.week-timeline {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 18px;
+}
+
+.week-segment {
+    height: 48px;
+    border-radius: 9px;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255,255,255,0.035);
+}
+
+.week-segment::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.8;
+}
+
+.segment-free::after {
+    background: rgba(97,230,176,0.22);
+}
+
+.segment-mixed::after {
+    background: rgba(126,167,255,0.2);
+}
+
+.segment-busy::after {
+    background: rgba(244,199,106,0.22);
+}
+
+.segment-full::after {
+    background: rgba(255,115,115,0.22);
+}
+
+.week-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 0.66rem;
+}
+
+.legend-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.legend-free {
+    background: var(--mint);
+}
+
+.legend-mixed {
+    background: var(--blue);
+}
+
+.legend-busy {
+    background: var(--amber);
+}
+
+.legend-full {
+    background: var(--red);
+}
+
+/* =========================================================
+   EVENTS
+   ========================================================= */
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.event-card {
+    padding: 19px;
+
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.025);
+}
+
+.event-date {
+    color: var(--blue);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.event-title {
+    margin-top: 12px;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.event-description {
+    margin-top: 7px;
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    line-height: 1.55;
+}
+
+.event-type {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 5px 7px;
+
+    border-radius: 7px;
+    background: var(--violet-soft);
+    color: #c8b8ff;
+
+    font-size: 0.6rem;
+    font-weight: 800;
+}
+
+/* =========================================================
+   PRINTOUT
+   ========================================================= */
+
+.printout-card {
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 25px;
+
+    background:
+        radial-gradient(circle at 100% 0%, rgba(126,167,255,0.07), transparent 35%),
+        rgba(255,255,255,0.025);
+}
+
+.printout-main {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    align-items: center;
+}
+
+.printout-info {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+}
+
+.printout-icon {
+    width: 55px;
+    height: 55px;
+    flex-shrink: 0;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 16px;
+    background: var(--blue-soft);
+    color: var(--blue);
+
+    font-size: 1.45rem;
+}
+
+.printout-title {
+    font-size: 1.25rem;
+    font-weight: 850;
+}
+
+.printout-location {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-top: 3px;
+}
+
+.queue-display {
+    text-align: right;
+}
+
+.queue-status {
+    font-size: 1.45rem;
+    font-weight: 850;
+}
+
+.queue-people {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    margin-top: 3px;
+}
+
+.printout-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 22px;
+}
+
+.printout-actions {
+    margin-top: 18px;
+    display: flex;
+    gap: 8px;
+}
+
+.printout-actions .btn {
+    flex: 1;
+}
+
+.queue-free {
+    color: var(--mint);
+}
+
+.queue-short {
+    color: var(--amber);
+}
+
+.queue-long {
+    color: var(--orange);
+}
+
+.queue-uncertain {
+    color: var(--red);
+}
+
+.lunch-unknown {
+    color: var(--text-muted);
+}
+
+/* =========================================================
+   MODALS
+   ========================================================= */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(3,6,9,0.74);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-backdrop.open {
+    display: flex;
+}
+
+.modal {
+    width: min(700px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+
+    border: 1px solid var(--border-strong);
+    border-radius: 24px;
+
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)),
+        #171d25;
+
+    box-shadow: 0 30px 100px rgba(0,0,0,0.45);
+
+    animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    align-items: flex-start;
+
+    padding: 21px;
+
+    background: rgba(23,29,37,0.94);
+    backdrop-filter: blur(15px);
+
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-kicker {
+    color: var(--mint);
+    font-size: 0.65rem;
+    font-weight: 850;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.modal-title {
+    margin-top: 5px;
+    font-size: 1.35rem;
+    font-weight: 850;
+}
+
+.modal-subtitle {
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 0.73rem;
+}
+
+.close-btn {
+    width: 35px;
+    height: 35px;
+
+    flex-shrink: 0;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: rgba(255,255,255,0.035);
+    color: var(--text-soft);
+
+    font-size: 1rem;
+}
+
+.close-btn:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.07);
+}
+
+.modal-body {
+    padding: 21px;
+}
+
+.modal-section {
+    margin-bottom: 22px;
+}
+
+.modal-section:last-child {
+    margin-bottom: 0;
+}
+
+.modal-section-title {
+    font-size: 0.76rem;
+    font-weight: 850;
+    color: var(--text-soft);
+
+    margin-bottom: 10px;
+}
+
+.modal-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.modal-stat {
+    padding: 13px;
+    border-radius: 13px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+}
+
+.modal-stat-label {
+    color: var(--text-muted);
+    font-size: 0.62rem;
+}
+
+.modal-stat-value {
+    margin-top: 5px;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.confidence-explanation {
+    margin-top: 9px;
+    color: var(--text-muted);
+    font-size: 0.67rem;
+    line-height: 1.5;
+}
+
+.pattern-chart {
+    position: relative;
+    overflow: hidden;
+    margin-top: 13px;
+    padding: 12px 10px 7px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: rgba(8,12,17,0.34);
+}
+
+.pattern-chart svg {
+    display: block;
+    width: 100%;
+    min-width: 620px;
+    height: auto;
+}
+
+.pattern-chart-scroll {
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.pattern-grid-line {
+    stroke: rgba(255,255,255,0.08);
+    stroke-width: 1;
+}
+
+.pattern-axis-label,
+.pattern-time-label {
+    fill: var(--text-muted);
+    font-size: 11px;
+}
+
+.pattern-time-label {
+    text-anchor: middle;
+}
+
+.pattern-line {
+    fill: none;
+    stroke: var(--mint);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 5px rgba(97,230,176,0.22));
+    stroke-dasharray: 1100;
+    stroke-dashoffset: 1100;
+    animation: pattern-line-in 0.55s ease forwards;
+}
+
+@keyframes pattern-line-in {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.pattern-point {
+    fill: var(--card-solid);
+    stroke: var(--mint);
+    stroke-width: 3;
+    transition: r 0.2s ease, fill 0.2s ease;
+}
+
+.pattern-point:hover {
+    r: 7;
+    fill: var(--mint);
+}
+
+.pattern-event-line {
+    stroke: var(--amber);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 4;
+}
+
+.pattern-event-label {
+    fill: var(--amber);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+}
+
+.pattern-chart-note {
+    margin: 7px 4px 0;
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    line-height: 1.45;
+}
+
+.pattern-label {
+    margin-top: 6px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.56rem;
+}
+
+.report-form {
+    padding: 17px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+}
+
+.option-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+}
+
+.option-btn {
+    padding: 10px 7px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    background: rgba(255,255,255,0.025);
+    color: var(--text-soft);
+
+    font-size: 0.69rem;
+    font-weight: 750;
+
+    transition: 0.2s ease;
+}
+
+.option-btn:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+}
+
+.option-btn.selected {
+    background: var(--mint-soft);
+    border-color: rgba(97,230,176,0.25);
+    color: var(--mint);
+}
+
+.field {
+    margin-top: 13px;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 6px;
+
+    color: var(--text-soft);
+    font-size: 0.68rem;
+    font-weight: 750;
+}
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+
+    padding: 10px 11px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    outline: none;
+
+    background: rgba(255,255,255,0.035);
+    color: var(--text);
+}
+
+.field textarea {
+    resize: vertical;
+    min-height: 75px;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    border-color: rgba(97,230,176,0.3);
+}
+
+.system-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.calculator-result {
+    margin-top: 9px;
+    padding: 12px;
+
+    border-radius: 11px;
+    background: var(--mint-soft);
+    color: #b7efd9;
+
+    font-size: 0.73rem;
+    line-height: 1.45;
+}
+
+.confirm-row {
+    display: flex;
+    gap: 8px;
+}
+
+.confirm-row .btn {
+    flex: 1;
+}
+
+.consensus-box {
+    padding: 13px;
+    border-radius: 13px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--border);
+}
+
+.consensus-main {
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.consensus-sub {
+    margin-top: 5px;
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    line-height: 1.45;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+
+    padding: 9px 10px;
+
+    border-radius: 9px;
+    background: rgba(255,255,255,0.025);
+
+    color: var(--text-soft);
+    font-size: 0.65rem;
+}
+
+.history-time {
+    color: var(--text-muted);
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+.toast-container {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 500;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    width: min(350px, calc(100% - 40px));
+}
+
+.toast {
+    padding: 13px 14px;
+
+    border-radius: 13px;
+    border: 1px solid var(--border-strong);
+
+    background: rgba(27,34,44,0.95);
+    backdrop-filter: blur(16px);
+
+    color: var(--text-soft);
+    font-size: 0.73rem;
+
+    box-shadow: var(--shadow);
+
+    animation:
+        toastIn 0.25s ease,
+        toastOut 0.3s ease 3.3s forwards;
+}
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes toastOut {
+    to {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.footer {
+    padding: 45px 0 60px;
+    border-top: 1px solid var(--border);
+}
+
+.footer-inner {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+}
+
+.footer-text {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    line-height: 1.5;
+}
+
+.footer-brand {
+    font-weight: 800;
+    color: var(--text-soft);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    .hero-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-panel {
+        max-width: 720px;
+    }
+
+    .snapshot-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+
+    .container,
+    .nav-inner {
+        width: min(100% - 26px, var(--max));
+    }
+
+    .nav {
+        height: 68px;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .nav-mobile-btn {
+        display: grid;
+        place-items: center;
+    }
+
+    .mobile-menu {
+        top: 68px;
+    }
+
+    .hero {
+        padding: 58px 0 45px;
+    }
+
+    .hero-title {
+        font-size: clamp(3rem, 15vw, 5rem);
+    }
+
+    .section {
+        padding: 65px 0;
+    }
+
+    .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .lab-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .week-days {
+        overflow-x: auto;
+        grid-template-columns: repeat(7, minmax(70px, 1fr));
+    }
+
+    .week-timeline {
+        grid-template-columns: repeat(7, minmax(35px, 1fr));
+        overflow-x: auto;
+    }
+
+    .printout-main {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .queue-display {
+        text-align: left;
+    }
+
+    .option-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .update-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .update-form-full {
+        grid-column: auto;
+    }
+
+    .campus-update-top {
+        flex-direction: column;
+    }
+
+    .campus-update-date {
+        text-align: left;
+    }
+
+    .campus-update-actions,
+    .update-vote-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .campus-update-actions .btn,
+    .update-vote-row .btn {
+        width: 100%;
+    }
+
+    body {
+        padding-bottom: 72px;
+    }
+
+    .connection-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+        gap: 3px;
+        padding: 7px 0;
+    }
+
+    .connection-note {
+        text-align: left;
+    }
+
+    .change-strip {
+        align-items: flex-start;
+    }
+
+    .mobile-bottom-nav {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 150;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+        border-top: 1px solid var(--border-strong);
+        background: rgba(14,18,24,0.94);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+    }
+
+    .mobile-bottom-nav a {
+        padding: 7px 4px;
+        color: var(--text-muted);
+        font-size: 0.63rem;
+        text-align: center;
+    }
+
+    .mobile-bottom-nav a:active,
+    .mobile-bottom-nav a:hover {
+        color: var(--mint);
+    }
+}
+
+@media (max-width: 500px) {
+
+    .snapshot-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .snapshot-card {
+        padding: 14px;
+    }
+
+    .snapshot-value {
+        font-size: 1.35rem;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+    }
+
+    .timetable-periods {
+        gap: 3px;
+    }
+
+    .period-pill {
+        font-size: 0.53rem;
+    }
+
+    .modal-stat-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .system-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .confirm-row {
+        flex-direction: column;
+    }
+
+    .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =======================================================
+     NAV
+     ======================================================= -->
+
+<nav class="nav">
+    <div class="nav-inner">
+
+        <a href="#home" class="logo">
+            <span class="logo-mark"><span></span></span>
+            <span>CampusNow</span>
+        </a>
+
+        <div class="nav-links">
+            <a href="#labs" class="nav-link">Labs</a>
+            <a href="#updates" class="nav-link">Updates</a>
+            <a href="#week" class="nav-link">This Week</a>
+            <a href="#events" class="nav-link">Events</a>
+            <a href="#printout" class="nav-link">Printout</a>
+        </div>
+
+        <button class="nav-mobile-btn" onclick="toggleMobileMenu()" aria-label="Open menu">
+            ☰
+        </button>
+
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#home" onclick="closeMobileMenu()">Home</a>
+        <a href="#labs" onclick="closeMobileMenu()">Labs</a>
+        <a href="#updates" onclick="closeMobileMenu()">Updates</a>
+        <a href="#week" onclick="closeMobileMenu()">This Week</a>
+        <a href="#events" onclick="closeMobileMenu()">Events</a>
+        <a href="#printout" onclick="closeMobileMenu()">Printout</a>
+    </div>
+</nav>
+
+<!-- =======================================================
+     DEMO BANNER
+     ======================================================= -->
+
+<div class="demo-banner">
+    <div class="container demo-inner">
+        <span class="demo-dot"></span>
+        <span>Demo mode · Sample data only · Student reports do not persist yet</span>
+    </div>
+</div>
+
+<div class="connection-strip" role="status" aria-live="polite">
+    <div class="container connection-inner">
+        <span class="connection-state" id="connectionState">Online</span>
+        <span class="connection-note" id="connectionNote">Demo information can refresh while connected.</span>
+    </div>
+</div>
+
+<!-- =======================================================
+     HERO
+     ======================================================= -->
+
+<header class="hero" id="home">
+
+    <div class="container hero-grid">
+
+        <div>
+
+            <div class="live-badge">
+                <span class="live-dot"></span>
+                CAMPUS · LIVE
+            </div>
+
+            <div class="context-badge" id="campusContext">
+                Campus status · <strong>Active</strong>
+            </div>
+
+            <h1 class="hero-title">
+                Know before<br>
+                you <span>walk.</span>
+            </h1>
+
+            <p class="hero-subtitle">
+                Check computer lab availability, printout queues,
+                campus timings and historical patterns before making
+                the trip across campus.
+            </p>
+
+            <div class="hero-actions">
+                <button class="btn btn-primary" onclick="scrollToSection('labs')">
+                    Explore Labs
+                </button>
+
+                <button class="btn btn-secondary" onclick="scrollToSection('printout')">
+                    Check Printout
+                </button>
+            </div>
+
+        </div>
+
+        <!-- LIVE TIMETABLE -->
+
+        <div class="hero-panel">
+
+            <div class="panel-top">
+                <div class="panel-label">Campus Timing</div>
+                <div class="clock" id="liveClock">--:--:--</div>
+            </div>
+
+            <div class="timetable-main">
+
+                <div class="timetable-state" id="timetableState">
+                    Loading...
+                </div>
+
+                <div class="timetable-detail" id="timetableDetail">
+                    Checking today's schedule...
+                </div>
+
+                <div class="data-refresh-note" id="dataRefreshNote">
+                    Updated just now · Next refresh in 60 sec
+                </div>
+
+                <div class="timetable-progress">
+                    <div
+                        class="timetable-progress-bar"
+                        id="timetableProgress"
+                    ></div>
+                </div>
+
+            </div>
+
+            <div class="timetable-periods" id="periodPills"></div>
+
+        </div>
+
+    </div>
+</header>
+
+<!-- =======================================================
+     SNAPSHOT
+     ======================================================= -->
+
+<section class="section" id="snapshot">
+
+    <div class="container">
+
+        <div class="change-strip hidden" id="changeStrip">
+            <div>
+                <div class="change-strip-title">Since your last visit</div>
+                <div class="change-strip-text" id="changeStripText"></div>
+            </div>
+            <button class="change-dismiss" onclick="dismissChangeStrip()" aria-label="Dismiss changes">×</button>
+        </div>
+
+        <div class="section-heading">
+            <div>
+                <div class="section-kicker">Campus Snapshot</div>
+                <h2 class="section-title">What campus looks like right now.</h2>
+            </div>
+
+            <p class="section-description">
+                A quick overview generated from the current demo reports.
+            </p>
+        </div>
+
+        <div class="snapshot-grid">
+
+            <div class="snapshot-card">
+                <div class="snapshot-icon">⌘</div>
+                <div class="snapshot-value" id="snapshotLabs">5</div>
+                <div class="snapshot-label">Computer labs</div>
+            </div>
+
+            <div class="snapshot-card">
+                <div class="snapshot-icon">%</div>
+                <div class="snapshot-value" id="snapshotAverage">--%</div>
+                <div class="snapshot-label">Average availability</div>
+            </div>
+
+            <div class="snapshot-card">
+                <div class="snapshot-icon">◷</div>
+                <div class="snapshot-value" id="snapshotFree">--</div>
+                <div class="snapshot-label">Labs mostly free</div>
+            </div>
+
+            <div class="snapshot-card">
+                <div class="snapshot-icon">↻</div>
+                <div class="snapshot-value" id="snapshotFresh">--</div>
+                <div class="snapshot-label">Recent reports</div>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =======================================================
+     CAMPUS UPDATES
+     ======================================================= -->
+
+<section class="section" id="updates">
+
+    <div class="container">
+
+        <div class="section-heading">
+            <div>
+                <div class="section-kicker">Campus Updates</div>
+                <h2 class="section-title">What students are reporting.</h2>
+                <p class="section-description">
+                    Anonymous community reports are weighted by freshness and agreement.
+                    They are not official college announcements.
+                </p>
+            </div>
+
+            <button class="btn btn-primary" onclick="openCampusUpdateReport()">
+                Add Campus Update
+            </button>
+        </div>
+
+        <div class="updates-preview" id="campusUpdatesList">
+            <div class="update-empty">
+                No community updates yet. Add a report when you hear about a holiday,
+                exam, closure, maintenance issue, event, or timing change.
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =======================================================
+     LABS
+     ======================================================= -->
+
+<section class="section" id="labs">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <div>
+                <div class="section-kicker">Computer Labs</div>
+                <h2 class="section-title">Find a lab before you go.</h2>
+
+                <p class="section-description">
+                    Availability is based on recent student reports,
+                    report agreement and freshness.
+                </p>
+
+                <div class="data-refresh-note" id="lastCheckedNote"></div>
+            </div>
+
+        </div>
+
+        <!-- CONTROLS -->
+
+        <div class="controls">
+
+            <div class="search-wrap">
+                <span class="search-icon">⌕</span>
+                <input
+                    type="text"
+                    id="labSearch"
+                    placeholder="Search labs or blocks..."
+                    oninput="filterLabs()"
+                >
+            </div>
+
+            <div class="filter-group">
+
+                <button
+                    class="filter-btn active"
+                    data-filter="all"
+                    onclick="setFilter('all', this)"
+                >
+                    All
+                </button>
+
+                <button
+                    class="filter-btn"
+                    data-filter="veryfree"
+                    onclick="setFilter('veryfree', this)"
+                >
+                    Very Free
+                </button>
+
+                <button
+                    class="filter-btn"
+                    data-filter="free"
+                    onclick="setFilter('free', this)"
+                >
+                    Free
+                </button>
+
+                <button
+                    class="filter-btn"
+                    data-filter="busy"
+                    onclick="setFilter('busy', this)"
+                >
+                    Busy
+                </button>
+
+                <button
+                    class="filter-btn"
+                    data-filter="full"
+                    onclick="setFilter('full', this)"
+                >
+                    Full
+                </button>
+
+            </div>
+
+            <select
+                class="sort-select"
+                id="labSort"
+                onchange="sortLabs()"
+            >
+                <option value="default">Default</option>
+                <option value="most">Most available</option>
+                <option value="least">Least available</option>
+                <option value="recent">Recently updated</option>
+            </select>
+
+        </div>
+
+        <!-- LAB CARDS -->
+
+        <div class="lab-grid" id="labGrid">
+
+            <!-- Maffei Ground -->
+
+            <article
+                class="lab-card"
+                data-id="maffei-ground"
+                data-name="Maffei Block Ground Floor"
+                data-status="free"
+                data-percent="64"
+                data-minutes="3"
+                data-pattern="quiet"
+            >
+
+                <div class="lab-top">
+
+                    <div class="lab-title-wrap">
+                        <div class="lab-name">
+                            Maffei Block · Ground Floor
+                        </div>
+
+                        <div class="lab-location">
+                            Computer Lab
+                        </div>
+                    </div>
+
+                    <div class="status-pill status-free">
+                        Mostly free
+                    </div>
+
+                </div>
+
+                <div class="lab-percent-row">
+                    <div>
+                        <div class="lab-percent">64%</div>
+                        <div class="lab-percent-label">
+                            estimated available
+                        </div>
+                    </div>
+                </div>
+
+                <div class="percent-track">
+                    <div class="percent-fill" style="width:64%"></div>
+                </div>
+
+                <div class="lab-meta">
+                    <span class="meta-chip">
+                        Confidence:
+                        <strong>High</strong>
+                    </span>
+
+                    <span class="meta-chip">
+                        12 reports
+                    </span>
+
+                    <span class="meta-chip">
+                        Updated 3 min ago
+                    </span>
+                </div>
+
+                <div class="prediction">
+                    <div class="prediction-icon">✦</div>
+
+                    <div class="prediction-text">
+                        <div class="prediction-title">
+                            Likely Free
+                        </div>
+
+                        <div class="prediction-sub">
+                            Pattern-based estimate, not a guarantee
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trend-row">
+                    <span class="trend trend-up">
+                        ↗ Improving
+                    </span>
+
+                    <span class="confidence">
+                        Strong agreement
+                    </span>
+                </div>
+
+                <div class="card-actions">
+                    <button
+                        class="btn btn-secondary btn-small"
+                        onclick="openLab('maffei-ground')"
+                    >
+                        View details
+                    </button>
+
+                    <button
+                        class="btn btn-primary btn-small"
+                        onclick="openLabReport('maffei-ground')"
+                    >
+                        Update
+                    </button>
+                </div>
+
+            </article>
+
+            <!-- Maffei Top -->
+
+            <article
+                class="lab-card"
+                data-id="maffei-top"
+                data-name="Maffei Block Top Floor"
+                data-status="free"
+                data-percent="42"
+                data-minutes="7"
+                data-pattern="mixed"
+            >
+
+                <div class="lab-top">
+
+                    <div class="lab-title-wrap">
+                        <div class="lab-name">
+                            Maffei Block · Top Floor
+                        </div>
+
+                        <div class="lab-location">
+                            Computer Lab
+                        </div>
+                    </div>
+
+                    <div class="status-pill status-free">
+                        Available
+                    </div>
+
+                </div>
+
+                <div class="lab-percent-row">
+                    <div>
+                        <div class="lab-percent">42%</div>
+                        <div class="lab-percent-label">
+                            estimated available
+                        </div>
+                    </div>
+                </div>
+
+                <div class="percent-track">
+                    <div class="percent-fill" style="width:42%"></div>
+                </div>
+
+                <div class="lab-meta">
+
+                    <span class="meta-chip">
+                        Confidence:
+                        <strong>Medium</strong>
+                    </span>
+
+                    <span class="meta-chip">
+                        8 reports
+                    </span>
+
+                    <span class="meta-chip">
+                        Updated 7 min ago
+                    </span>
+
+                </div>
+
+                <div class="prediction">
+
+                    <div class="prediction-icon">◌</div>
+
+                    <div class="prediction-text">
+                        <div class="prediction-title">
+                            Possibly Free
+                        </div>
+
+                        <div class="prediction-sub">
+                            Pattern-based estimate, not a guarantee
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="trend-row">
+
+                    <span class="trend trend-stable">
+                        → Stable
+                    </span>
+
+                    <span class="confidence">
+                        Moderate agreement
+                    </span>
+
+                </div>
+
+                <div class="card-actions">
+
+                    <button
+                        class="btn btn-secondary btn-small"
+                        onclick="openLab('maffei-top')"
+                    >
+                        View details
+                    </button>
+
+                    <button
+                        class="btn btn-primary btn-small"
+                        onclick="openLabReport('maffei-top')"
+                    >
+                        Update
+                    </button>
+
+                </div>
+
+            </article>
+
+            <!-- LCRI -->
+
+            <article
+                class="lab-card"
+                data-id="lcri"
+                data-name="LCRI Block Computer Lab"
+                data-status="veryfree"
+                data-percent="78"
+                data-minutes="2"
+                data-pattern="veryfree"
+            >
+
+                <div class="lab-top">
+
+                    <div class="lab-title-wrap">
+
+                        <div class="lab-name">
+                            LCRI Block
+                        </div>
+
+                        <div class="lab-location">
+                            Computer Lab
+                        </div>
+
+                    </div>
+
+                    <div class="status-pill status-free">
+                        Very free
+                    </div>
+
+                </div>
+
+                <div class="lab-percent-row">
+
+                    <div>
+
+                        <div class="lab-percent">
+                            78%
+                        </div>
+
+                        <div class="lab-percent-label">
+                            estimated available
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="percent-track">
+                    <div class="percent-fill" style="width:78%"></div>
+                </div>
+
+                <div class="lab-meta">
+
+                    <span class="meta-chip">
+                        Confidence:
+                        <strong>High</strong>
+                    </span>
+
+                    <span class="meta-chip">
+                        15 reports
+                    </span>
+
+                    <span class="meta-chip">
+                        Updated 2 min ago
+                    </span>
+
+                </div>
+
+                <div class="prediction">
+
+                    <div class="prediction-icon">✦</div>
+
+                    <div class="prediction-text">
+
+                        <div class="prediction-title">
+                            Likely Very Free
+                        </div>
+
+                        <div class="prediction-sub">
+                            Pattern-based estimate, not a guarantee
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="trend-row">
+
+                    <span class="trend trend-up">
+                        ↗ Improving
+                    </span>
+
+                    <span class="confidence">
+                        Strong agreement
+                    </span>
+
+                </div>
+
+                <div class="card-actions">
+
+                    <button
+                        class="btn btn-secondary btn-small"
+                        onclick="openLab('lcri')"
+                    >
+                        View details
+                    </button>
+
+                    <button
+                        class="btn btn-primary btn-small"
+                        onclick="openLabReport('lcri')"
+                    >
+                        Update
+                    </button>
+
+                </div>
+
+            </article>
+
+            <!-- Admin -->
+
+            <article
+                class="lab-card"
+                data-id="admin"
+                data-name="Admin Block Computer Lab"
+                data-status="busy"
+                data-percent="31"
+                data-minutes="5"
+                data-pattern="busy"
+            >
+
+                <div class="lab-top">
+
+                    <div class="lab-title-wrap">
+
+                        <div class="lab-name">
+                            Admin Block
+                        </div>
+
+                        <div class="lab-location">
+                            Computer Lab
+                        </div>
+
+                    </div>
+
+                    <div class="status-pill status-busy">
+                        Busy
+                    </div>
+
+                </div>
+
+                <div class="lab-percent-row">
+
+                    <div>
+
+                        <div class="lab-percent">
+                            31%
+                        </div>
+
+                        <div class="lab-percent-label">
+                            estimated available
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="percent-track">
+                    <div class="percent-fill" style="width:31%"></div>
+                </div>
+
+                <div class="lab-meta">
+
+                    <span class="meta-chip">
+                        Confidence:
+                        <strong>Medium</strong>
+                    </span>
+
+                    <span class="meta-chip">
+                        6 reports
+                    </span>
+
+                    <span class="meta-chip">
+                        Updated 5 min ago
+                    </span>
+
+                </div>
+
+                <div class="prediction">
+
+                    <div class="prediction-icon">◌</div>
+
+                    <div class="prediction-text">
+
+                        <div class="prediction-title">
+                            Less Likely Free
+                        </div>
+
+                        <div class="prediction-sub">
+                            Pattern-based estimate, not a guarantee
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="trend-row">
+
+                    <span class="trend trend-down">
+                        ↘ Getting busy
+                    </span>
+
+                    <span class="confidence">
+                        Moderate agreement
+                    </span>
+
+                </div>
+
+                <div class="card-actions">
+
+                    <button
+                        class="btn btn-secondary btn-small"
+                        onclick="openLab('admin')"
+                    >
+                        View details
+                    </button>
+
+                    <button
+                        class="btn btn-primary btn-small"
+                        onclick="openLabReport('admin')"
+                    >
+                        Update
+                    </button>
+
+                </div>
+
+            </article>
+
+            <!-- Xavier -->
+
+            <article
+                class="lab-card"
+                data-id="xavier"
+                data-name="Xavier Block Computer Lab"
+                data-status="free"
+                data-percent="55"
+                data-minutes="4"
+                data-pattern="mixed"
+            >
+
+                <div class="lab-top">
+
+                    <div class="lab-title-wrap">
+
+                        <div class="lab-name">
+                            Xavier Block
+                        </div>
+
+                        <div class="lab-location">
+                            Computer Lab
+                        </div>
+
+                    </div>
+
+                    <div class="status-pill status-free">
+                        Available
+                    </div>
+
+                </div>
+
+                <div class="lab-percent-row">
+
+                    <div>
+
+                        <div class="lab-percent">
+                            55%
+                        </div>
+
+                        <div class="lab-percent-label">
+                            estimated available
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="percent-track">
+                    <div class="percent-fill" style="width:55%"></div>
+                </div>
+
+                <div class="lab-meta">
+
+                    <span class="meta-chip">
+                        Confidence:
+                        <strong>High</strong>
+                    </span>
+
+                    <span class="meta-chip">
+                        10 reports
+                    </span>
+
+                    <span class="meta-chip">
+                        Updated 4 min ago
+                    </span>
+
+                </div>
+
+                <div class="prediction">
+
+                    <div class="prediction-icon">✦</div>
+
+                    <div class="prediction-text">
+
+                        <div class="prediction-title">
+                            Likely Free
+                        </div>
+
+                        <div class="prediction-sub">
+                            Pattern-based estimate, not a guarantee
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="trend-row">
+
+                    <span class="trend trend-stable">
+                        → Stable
+                    </span>
+
+                    <span class="confidence">
+                        Strong agreement
+                    </span>
+
+                </div>
+
+                <div class="card-actions">
+
+                    <button
+                        class="btn btn-secondary btn-small"
+                        onclick="openLab('xavier')"
+                    >
+                        View details
+                    </button>
+
+                    <button
+                        class="btn btn-primary btn-small"
+                        onclick="openLabReport('xavier')"
+                    >
+                        Update
+                    </button>
+
+                </div>
+
+            </article>
+
+            <div
+                class="no-results hidden"
+                id="noResults"
+            >
+                No labs match your search.
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =======================================================
+     WEEK
+     ======================================================= -->
+
+<section class="section" id="week">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <div>
+
+                <div class="section-kicker">
+                    Weekly Pattern
+                </div>
+
+                <h2 class="section-title">
+                    Look beyond the current moment.
+                </h2>
+
+                <p class="section-description">
+                    Historical observations can reveal recurring quiet
+                    and busy periods. These are patterns, not guarantees.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="week-shell">
+
+            <div class="week-days" id="weekDays"></div>
+
+            <div class="week-detail">
+
+                <div class="week-detail-top">
+
+                    <div>
+
+                        <div
+                            class="week-detail-title"
+                            id="weekDetailTitle"
+                        >
+                            Wednesday · 24
+                        </div>
+
+                        <div
+                            class="week-detail-note"
+                            id="weekDetailNote"
+                        >
+                            Usually mixed availability across the labs.
+                        </div>
+
+                    </div>
+
+                    <span class="sample-label">
+                        SAMPLE DATA
+                    </span>
+
+                </div>
+
+                <div
+                    class="week-timeline"
+                    id="weekTimeline"
+                ></div>
+
+                <div class="week-legend">
+
+                    <div class="legend-item">
+                        <span class="legend-dot legend-free"></span>
+                        Quieter
+                    </div>
+
+                    <div class="legend-item">
+                        <span class="legend-dot legend-mixed"></span>
+                        Mixed
+                    </div>
+
+                    <div class="legend-item">
+                        <span class="legend-dot legend-busy"></span>
+                        Busy
+                    </div>
+
+                    <div class="legend-item">
+                        <span class="legend-dot legend-full"></span>
+                        Very busy
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =======================================================
+     EVENTS
+     ======================================================= -->
+
+<section class="section" id="events">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <div>
+
+                <div class="section-kicker">
+                    Campus Events
+                </div>
+
+                <h2 class="section-title">
+                    Things that can change the pattern.
+                </h2>
+
+                <p class="section-description">
+                    Exams, events and holidays can affect lab usage.
+                    The events below are sample data for V1. Student-reported updates remain separate and are shown in Campus Updates.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="events-grid">
+
+            <div class="event-card">
+
+                <div class="event-date">
+                    Wednesday · 24
+                </div>
+
+                <div class="event-title">
+                    Internal Assessments
+                </div>
+
+                <div class="event-description">
+                    Sample event. Lab demand may differ from a normal
+                    timetable day.
+                </div>
+
+                <span class="event-type">
+                    ACADEMIC
+                </span>
+
+            </div>
+
+            <div class="event-card">
+
+                <div class="event-date">
+                    Thursday · 25
+                </div>
+
+                <div class="event-title">
+                    College Event
+                </div>
+
+                <div class="event-description">
+                    Sample event. Campus movement may affect normal
+                    availability patterns.
+                </div>
+
+                <span class="event-type">
+                    CAMPUS
+                </span>
+
+            </div>
+
+            <div class="event-card">
+
+                <div class="event-date">
+                    Friday · 26
+                </div>
+
+                <div class="event-title">
+                    Holiday
+                </div>
+
+                <div class="event-description">
+                    Sample event. Normal class-period assumptions may
+                    not apply.
+                </div>
+
+                <span class="event-type">
+                    HOLIDAY
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="modal-section" style="margin-top:28px;">
+            <div class="modal-section-title">Community-supported updates</div>
+            <div class="updates-preview" id="communityEventUpdates">
+                <div class="update-empty">Student-reported holidays, exams, events, and timing changes will appear here separately from the sample events above.</div>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =======================================================
+     PRINTOUT
+     ======================================================= -->
+
+<section class="section" id="printout">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <div>
+
+                <div class="section-kicker">
+                    Admin Printout
+                </div>
+
+                <h2 class="section-title">
+                    Check the queue before walking over.
+                </h2>
+
+                <p class="section-description">
+                    Queue information is separate from lab availability.
+                    Students can submit anonymous queue reports here too.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="printout-card">
+
+            <div class="printout-main">
+
+                <div class="printout-info">
+
+                    <div class="printout-icon">
+                        ▤
+                    </div>
+
+                    <div>
+
+                        <div class="printout-title">
+                            Admin Printout
+                        </div>
+
+                        <div class="printout-location">
+                            Admin Block · Printout Counter
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="queue-display">
+
+                    <div
+                        class="queue-status queue-short"
+                        id="printoutStatus"
+                    >
+                        Short Queue
+                    </div>
+
+                    <div
+                        class="queue-people"
+                        id="printoutPeople"
+                    >
+                        ~4 people waiting
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="printout-details">
+
+                <span
+                    class="meta-chip"
+                    id="printoutConfidence"
+                >
+                    Confidence: High
+                </span>
+
+                <span
+                    class="meta-chip"
+                    id="printoutUpdated"
+                >
+                    Updated 2 min ago
+                </span>
+
+                <span
+                    class="meta-chip"
+                    id="printoutAgreement"
+                >
+                    Strong agreement
+                </span>
+
+                <span class="meta-chip" id="printoutLunch">
+                    Lunch availability:
+                    <strong class="lunch-unknown">
+                        To be confirmed
+                    </strong>
+                </span>
+
+            </div>
+
+            <div class="printout-actions">
+
+                <button
+                    class="btn btn-secondary"
+                    onclick="openPrintoutDetails()"
+                >
+                    View reports
+                </button>
+
+                <button
+                    class="btn btn-primary"
+                    onclick="openPrintoutReport()"
+                >
+                    Update Printout Status
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =======================================================
+     FOOTER
+     ======================================================= -->
+
+<footer class="footer">
+
+    <div class="container footer-inner">
+
+        <div class="footer-text">
+            <span class="footer-brand">CampusNow</span><br>
+            Know before you walk.
+        </div>
+
+        <div class="footer-text">
+            Demo V1.0 · Frontend only · Sample data
+        </div>
+
+    </div>
+
+</footer>
+
+<nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+    <a href="#home">Home</a>
+    <a href="#labs">Labs</a>
+    <a href="#snapshot">Today</a>
+    <a href="#printout">Printout</a>
+</nav>
+
+<!-- =======================================================
+     LAB MODAL
+     ======================================================= -->
+
+<div
+    class="modal-backdrop"
+    id="campusUpdateModal"
+    onclick="closeModalOutside(event, 'campusUpdateModal')"
+>
+
+    <div class="modal">
+
+        <div class="modal-header">
+            <div>
+                <div class="modal-kicker" id="campusUpdateModalKicker">Campus Update</div>
+                <div class="modal-title" id="campusUpdateModalTitle">Add Campus Update</div>
+                <div class="modal-subtitle">Anonymous student reports · Demo/local only</div>
+            </div>
+
+            <button class="close-btn" onclick="closeModal('campusUpdateModal')">✕</button>
+        </div>
+
+        <div class="modal-body">
+
+            <div id="campusUpdateDetailView" class="hidden">
+                <div class="modal-section">
+                    <div class="campus-update-top">
+                        <div>
+                            <div class="campus-update-type" id="campusUpdateDetailType">Holiday</div>
+                            <div class="modal-section-title" id="campusUpdateDetailTitle">Update</div>
+                        </div>
+                        <span class="update-state reported" id="campusUpdateDetailState">Reported</span>
+                    </div>
+
+                    <div class="campus-update-details" id="campusUpdateDetailDate"></div>
+                    <div class="campus-update-details" id="campusUpdateDetailText"></div>
+                    <div class="campus-update-meta" id="campusUpdateDetailMeta"></div>
+                    <div class="update-explanation" id="campusUpdateDetailExplanation"></div>
+
+                    <div class="update-vote-row">
+                        <button class="btn btn-secondary" onclick="voteOnCampusUpdate(true)">
+                            Yes, this is accurate
+                        </button>
+                        <button class="btn btn-secondary" onclick="voteOnCampusUpdate(false)">
+                            No, this is not accurate
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="campusUpdateFormView">
+                <div class="modal-section">
+                    <div class="modal-section-title">Report a campus update</div>
+                    <div class="confidence-explanation">
+                        Reports start as unverified and are never presented as official announcements.
+                    </div>
+
+                    <div class="report-form">
+                        <div class="update-form-grid">
+                            <div class="field" style="margin-top:0;">
+                                <label for="campusUpdateType">Update type</label>
+                                <select id="campusUpdateType" onchange="toggleCampusUpdateFields()">
+                                    <option>Holiday</option>
+                                    <option>Exam / Internal Assessment</option>
+                                    <option>Lab Closed</option>
+                                    <option>Maintenance</option>
+                                    <option>College Event</option>
+                                    <option>Timing Change</option>
+                                    <option>Other Campus Update</option>
+                                </select>
+                            </div>
+
+                            <div class="field" style="margin-top:0;">
+                                <label for="campusUpdateDateMode">Date</label>
+                                <select id="campusUpdateDateMode" onchange="toggleCampusUpdateFields()">
+                                    <option value="today">Today</option>
+                                    <option value="tomorrow">Tomorrow</option>
+                                    <option value="future">A future date</option>
+                                </select>
+                            </div>
+
+                            <div class="field update-form-full hidden" id="campusUpdateFutureDateWrap">
+                                <label for="campusUpdateFutureDate">Future date</label>
+                                <input type="date" id="campusUpdateFutureDate">
+                            </div>
+
+                            <div class="field">
+                                <label for="campusUpdateTime">Time <span class="muted">(optional)</span></label>
+                                <input type="text" id="campusUpdateTime" placeholder="Example: 10:00 AM–12:00 PM">
+                            </div>
+
+                            <div class="field hidden" id="campusUpdateLabWrap">
+                                <label for="campusUpdateLab">Affected lab</label>
+                                <select id="campusUpdateLab">
+                                    <option value="maffei-ground">Maffei Ground</option>
+                                    <option value="maffei-top">Maffei Top</option>
+                                    <option value="lcri">LCRI</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="xavier">Xavier</option>
+                                </select>
+                            </div>
+
+                            <div class="field update-form-full">
+                                <label for="campusUpdateLocation">Location <span class="muted">(optional)</span></label>
+                                <input type="text" id="campusUpdateLocation" maxlength="120" placeholder="Example: LCRI Block or Main Auditorium">
+                            </div>
+
+                            <div class="field update-form-full">
+                                <label for="campusUpdateTitle">Short title</label>
+                                <input type="text" id="campusUpdateTitle" maxlength="100" placeholder="Example: Rain holiday">
+                            </div>
+
+                            <div class="field update-form-full">
+                                <label for="campusUpdateReason">Reason/details <span class="muted">(optional)</span></label>
+                                <textarea id="campusUpdateReason" maxlength="300" placeholder="What should other students know?"></textarea>
+                            </div>
+
+                            <div class="field update-form-full">
+                                <label for="campusUpdateNote">Additional note <span class="muted">(optional)</span></label>
+                                <textarea id="campusUpdateNote" maxlength="300" placeholder="Optional location, timing, or context"></textarea>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" style="width:100%; margin-top:15px;" onclick="submitCampusUpdate()">
+                            Submit Anonymous Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div
+    class="modal-backdrop"
+    id="labModal"
+    onclick="closeModalOutside(event, 'labModal')"
+>
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <div>
+                <div class="modal-kicker">
+                    Computer Lab
+                </div>
+
+                <div
+                    class="modal-title"
+                    id="labModalTitle"
+                >
+                    Lab
+                </div>
+
+                <div
+                    class="modal-subtitle"
+                    id="labModalSubtitle"
+                >
+                    Computer Lab
+                </div>
+            </div>
+
+            <button
+                class="close-btn"
+                onclick="closeModal('labModal')"
+            >
+                ✕
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <!-- CURRENT STATUS -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Current information
+                </div>
+
+                <div class="modal-stat-grid">
+
+                    <div class="modal-stat">
+
+                        <div class="modal-stat-label">
+                            Availability
+                        </div>
+
+                        <div
+                            class="modal-stat-value"
+                            id="modalPercent"
+                        >
+                            64%
+                        </div>
+
+                    </div>
+
+                    <div class="modal-stat">
+
+                        <div class="modal-stat-label">
+                            Confidence
+                        </div>
+
+                        <div
+                            class="modal-stat-value"
+                            id="modalConfidence"
+                        >
+                            High
+                        </div>
+
+                    </div>
+
+                    <div class="modal-stat">
+
+                        <div class="modal-stat-label">
+                            Updated
+                        </div>
+
+                        <div
+                            class="modal-stat-value"
+                            id="modalUpdated"
+                        >
+                            3 min ago
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div
+                    class="confidence-explanation"
+                    id="modalConfidenceExplanation"
+                >
+                    Multiple recent reports agree.
+                </div>
+
+            </div>
+
+            <!-- CONSENSUS -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Report consensus
+                </div>
+
+                <div class="consensus-box">
+
+                    <div
+                        class="consensus-main"
+                        id="modalConsensus"
+                    >
+                        Strong agreement
+                    </div>
+
+                    <div
+                        class="consensus-sub"
+                        id="modalConsensusSub"
+                    >
+                        Recent reports mostly point toward the same status.
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- TODAY'S PATTERN -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Today's Pattern
+                </div>
+
+                <div
+                    class="pattern-chart-scroll"
+                    id="modalPattern"
+                ></div>
+
+                <div class="week-legend">
+
+                    <div class="legend-item">
+                        <span class="legend-dot legend-free"></span>
+                        Quieter
+                    </div>
+
+                    <div class="legend-item">
+                        <span class="legend-dot legend-mixed"></span>
+                        Mixed
+                    </div>
+
+                    <div class="legend-item">
+                        <span class="legend-dot legend-busy"></span>
+                        Busy
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SYSTEM CALCULATOR -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Free systems calculator
+                </div>
+
+                <div class="report-form">
+
+                    <div class="system-grid">
+
+                        <div class="field" style="margin-top:0;">
+                            <label for="totalSystems">
+                                Total systems
+                            </label>
+
+                            <input
+                                type="number"
+                                id="totalSystems"
+                                min="1"
+                                placeholder="Not confirmed"
+                                oninput="calculateSystems()"
+                            >
+                        </div>
+
+                        <div class="field" style="margin-top:0;">
+                            <label for="freeSystems">
+                                Free systems
+                            </label>
+
+                            <input
+                                type="number"
+                                id="freeSystems"
+                                min="0"
+                                placeholder="Enter count"
+                                oninput="calculateSystems()"
+                            >
+                        </div>
+
+                    </div>
+
+                    <div
+                        class="calculator-result"
+                        id="calculatorResult"
+                    >
+                        Exact system count is not confirmed yet.
+                        Enter both values to calculate availability.
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- CONFIRM -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Is this information still accurate?
+                </div>
+
+                <div class="confirm-row">
+
+                    <button
+                        class="btn btn-secondary"
+                        onclick="confirmLab(true)"
+                    >
+                        ✓ Yes, still accurate
+                    </button>
+
+                    <button
+                        class="btn btn-secondary"
+                        onclick="confirmLab(false)"
+                    >
+                        Changed
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- REPORT -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Submit an anonymous update
+                </div>
+
+                <div class="report-form">
+
+                    <div class="option-grid">
+
+                        <button
+                            class="option-btn"
+                            data-lab-status="Very Free"
+                            onclick="selectLabStatus(this)"
+                        >
+                            Very Free
+                        </button>
+
+                        <button
+                            class="option-btn"
+                            data-lab-status="Free"
+                            onclick="selectLabStatus(this)"
+                        >
+                            Free
+                        </button>
+
+                        <button
+                            class="option-btn"
+                            data-lab-status="Busy"
+                            onclick="selectLabStatus(this)"
+                        >
+                            Busy
+                        </button>
+
+                        <button
+                            class="option-btn"
+                            data-lab-status="Full"
+                            onclick="selectLabStatus(this)"
+                        >
+                            Full
+                        </button>
+
+                        <button
+                            class="option-btn"
+                            data-lab-status="Exam in Progress"
+                            onclick="selectLabStatus(this)"
+                        >
+                            Exam in Progress
+                        </button>
+
+                        <button
+                            class="option-btn"
+                            data-lab-status="Closed"
+                            onclick="selectLabStatus(this)"
+                        >
+                            Closed
+                        </button>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="labFreeCount">
+                            Approximate free systems
+                            <span class="muted">(optional)</span>
+                        </label>
+
+                        <input
+                            type="number"
+                            id="labFreeCount"
+                            min="0"
+                            placeholder="Only if you know"
+                        >
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="labNote">
+                            Optional note
+                        </label>
+
+                        <textarea
+                            id="labNote"
+                            placeholder="Anything useful? Example: another batch is using the lab."
+                        ></textarea>
+
+                    </div>
+
+                    <button
+                        class="btn btn-primary"
+                        style="width:100%; margin-top:13px;"
+                        onclick="submitLabReport()"
+                    >
+                        Submit Anonymous Report
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- REPORT HISTORY -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Recent reports
+                </div>
+
+                <div
+                    class="history-list"
+                    id="labHistory"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =======================================================
+     PRINTOUT MODAL
+     ======================================================= -->
+
+<div
+    class="modal-backdrop"
+    id="printoutModal"
+    onclick="closeModalOutside(event, 'printoutModal')"
+>
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <div>
+
+                <div class="modal-kicker">
+                    Admin Printout
+                </div>
+
+                <div class="modal-title">
+                    Printout Queue
+                </div>
+
+                <div class="modal-subtitle">
+                    Anonymous student reports
+                </div>
+
+            </div>
+
+            <button
+                class="close-btn"
+                onclick="closeModal('printoutModal')"
+            >
+                ✕
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <!-- CURRENT -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Current information
+                </div>
+
+                <div class="modal-stat-grid">
+
+                    <div class="modal-stat">
+
+                        <div class="modal-stat-label">
+                            Queue
+                        </div>
+
+                        <div
+                            class="modal-stat-value"
+                            id="printModalQueue"
+                        >
+                            Short Queue
+                        </div>
+
+                    </div>
+
+                    <div class="modal-stat">
+
+                        <div class="modal-stat-label">
+                            People
+                        </div>
+
+                        <div
+                            class="modal-stat-value"
+                            id="printModalPeople"
+                        >
+                            ~4
+                        </div>
+
+                    </div>
+
+                    <div class="modal-stat">
+
+                        <div class="modal-stat-label">
+                            Confidence
+                        </div>
+
+                        <div
+                            class="modal-stat-value"
+                            id="printModalConfidence"
+                        >
+                            High
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div
+                    class="confidence-explanation"
+                    id="printModalExplanation"
+                >
+                    Multiple recent reports agree.
+                </div>
+
+            </div>
+
+            <!-- CONSENSUS -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Report consensus
+                </div>
+
+                <div class="consensus-box">
+
+                    <div
+                        class="consensus-main"
+                        id="printModalConsensus"
+                    >
+                        Strong agreement
+                    </div>
+
+                    <div
+                        class="consensus-sub"
+                        id="printModalConsensusSub"
+                    >
+                        Recent reports mostly point toward the same queue status.
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- CONFIRMATION -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Is this information still accurate?
+                </div>
+
+                <div class="confirm-row">
+
+                    <button
+                        class="btn btn-secondary"
+                        onclick="confirmPrintout(true)"
+                    >
+                        ✓ Yes, still accurate
+                    </button>
+
+                    <button
+                        class="btn btn-secondary"
+                        onclick="confirmPrintout(false)"
+                    >
+                        Changed
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- UPDATE -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Update printout status
+                </div>
+
+                <div class="report-form">
+
+                    <div class="option-grid">
+
+                        <button
+                            class="option-btn"
+                            data-queue-status="Free"
+                            onclick="selectQueueStatus(this)"
+                        >
+                            Free
+                        </button>
+
+                        <button
+                            class="option-btn"
+                            data-queue-status="Short Queue"
+                            onclick="selectQueueStatus(this)"
+                        >
+                            Short Queue
+                        </button>
+
+                        <button
+                            class="option-btn"
+                            data-queue-status="Long Queue"
+                            onclick="selectQueueStatus(this)"
+                        >
+                            Long Queue
+                        </button>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="queuePeople">
+                            Approximate people waiting
+                            <span class="muted">(optional)</span>
+                        </label>
+
+                        <input
+                            type="number"
+                            id="queuePeople"
+                            min="0"
+                            placeholder="Example: 4"
+                        >
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="lunchAvailability">
+                            Lunch availability
+                        </label>
+
+                        <select id="lunchAvailability">
+
+                            <option value="unknown">
+                                Not sure
+                            </option>
+
+                            <option value="available">
+                                Available
+                            </option>
+
+                            <option value="unavailable">
+                                Not available
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="field">
+
+                        <label for="printoutNote">
+                            Optional note
+                        </label>
+
+                        <textarea
+                            id="printoutNote"
+                            placeholder="Example: only one printer is working."
+                        ></textarea>
+
+                    </div>
+
+                    <button
+                        class="btn btn-primary"
+                        style="width:100%; margin-top:13px;"
+                        onclick="submitPrintoutReport()"
+                    >
+                        Submit Anonymous Report
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- HISTORY -->
+
+            <div class="modal-section">
+
+                <div class="modal-section-title">
+                    Recent reports
+                </div>
+
+                <div
+                    class="history-list"
+                    id="printoutHistory"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =======================================================
+     TOAST
+     ======================================================= -->
+
+<div
+    class="toast-container"
+    id="toastContainer"
+></div>
+
+<div
+    class="confidence-popover hidden"
+    id="confidencePopover"
+    role="status"
+    aria-live="polite"
+>
+    <div class="confidence-popover-title" id="confidencePopoverTitle">Confidence</div>
+    <div class="confidence-popover-text" id="confidencePopoverText"></div>
+</div>
+
+<!-- =======================================================
+     JAVASCRIPT
+     ======================================================= -->
+
+<script>
+
+/* =========================================================
+   CAMPUSNOW DATA
+   ========================================================= */
+
+const periods = [
+    {
+        number: 1,
+        start: "09:00",
+        end: "09:50"
+    },
+    {
+        number: 2,
+        start: "09:55",
+        end: "10:45"
+    },
+    {
+        number: 3,
+        start: "10:50",
+        end: "11:40"
+    },
+    {
+        number: 4,
+        start: "11:45",
+        end: "12:35"
+    },
+    {
+        number: 5,
+        start: "13:30",
+        end: "14:20"
+    },
+    {
+        number: 6,
+        start: "14:25",
+        end: "15:15"
+    },
+    {
+        number: 7,
+        start: "15:20",
+        end: "16:10"
+    }
+];
+
+const gaps = [
+    {
+        start: "09:50",
+        end: "09:55"
+    },
+    {
+        start: "10:45",
+        end: "10:50"
+    },
+    {
+        start: "11:40",
+        end: "11:45"
+    },
+    {
+        start: "14:20",
+        end: "14:25"
+    },
+    {
+        start: "15:15",
+        end: "15:20"
+    }
+];
+
+const labs = {
+
+    "maffei-ground": {
+        name: "Maffei Block · Ground Floor",
+        location: "Computer Lab",
+        status: "Mostly free",
+        percent: 64,
+        confidence: "High",
+        minutesAgo: 3,
+        reports: 12,
+        pattern: "quiet",
+        trend: "Improving",
+        confirmations: 8,
+
+        history: [
+            { status: "Free", minutesAgo: 3 },
+            { status: "Free", minutesAgo: 7 },
+            { status: "Very Free", minutesAgo: 11 },
+            { status: "Free", minutesAgo: 16 },
+            { status: "Busy", minutesAgo: 23 },
+            { status: "Free", minutesAgo: 31 }
+        ]
+    },
+
+    "maffei-top": {
+        name: "Maffei Block · Top Floor",
+        location: "Computer Lab",
+        status: "Available",
+        percent: 42,
+        confidence: "Medium",
+        minutesAgo: 7,
+        reports: 8,
+        pattern: "mixed",
+        trend: "Stable",
+        confirmations: 5,
+
+        history: [
+            { status: "Free", minutesAgo: 7 },
+            { status: "Busy", minutesAgo: 12 },
+            { status: "Free", minutesAgo: 18 },
+            { status: "Busy", minutesAgo: 27 },
+            { status: "Free", minutesAgo: 35 }
+        ]
+    },
+
+    "lcri": {
+        name: "LCRI Block",
+        location: "Computer Lab",
+        status: "Very free",
+        percent: 78,
+        confidence: "High",
+        minutesAgo: 2,
+        reports: 15,
+        pattern: "veryfree",
+        trend: "Improving",
+        confirmations: 11,
+
+        history: [
+            { status: "Very Free", minutesAgo: 2 },
+            { status: "Very Free", minutesAgo: 6 },
+            { status: "Free", minutesAgo: 10 },
+            { status: "Very Free", minutesAgo: 15 },
+            { status: "Free", minutesAgo: 21 },
+            { status: "Very Free", minutesAgo: 29 }
+        ]
+    },
+
+    "admin": {
+        name: "Admin Block",
+        location: "Computer Lab",
+        status: "Busy",
+        percent: 31,
+        confidence: "Medium",
+        minutesAgo: 5,
+        reports: 6,
+        pattern: "busy",
+        trend: "Getting busy",
+        confirmations: 3,
+
+        history: [
+            { status: "Busy", minutesAgo: 5 },
+            { status: "Busy", minutesAgo: 9 },
+            { status: "Free", minutesAgo: 17 },
+            { status: "Busy", minutesAgo: 24 },
+            { status: "Busy", minutesAgo: 33 }
+        ]
+    },
+
+    "xavier": {
+        name: "Xavier Block",
+        location: "Computer Lab",
+        status: "Available",
+        percent: 55,
+        confidence: "High",
+        minutesAgo: 4,
+        reports: 10,
+        pattern: "mixed",
+        trend: "Stable",
+        confirmations: 7,
+
+        history: [
+            { status: "Free", minutesAgo: 4 },
+            { status: "Free", minutesAgo: 8 },
+            { status: "Busy", minutesAgo: 14 },
+            { status: "Free", minutesAgo: 20 },
+            { status: "Free", minutesAgo: 28 }
+        ]
+    }
+};
+
+/* =========================================================
+   PRINTOUT DATA
+   ========================================================= */
+
+const printout = {
+
+    status: "Short Queue",
+
+    people: 4,
+
+    confidence: "High",
+
+    minutesAgo: 2,
+
+    confirmations: 6,
+
+    lunch: "unknown",
+
+    history: [
+        {
+            status: "Short Queue",
+            people: 4,
+            minutesAgo: 2
+        },
+        {
+            status: "Short Queue",
+            people: 3,
+            minutesAgo: 7
+        },
+        {
+            status: "Free",
+            people: 0,
+            minutesAgo: 13
+        },
+        {
+            status: "Short Queue",
+            people: 5,
+            minutesAgo: 21
+        },
+        {
+            status: "Short Queue",
+            people: 4,
+            minutesAgo: 30
+        }
+    ]
+
+};
+
+/* =========================================================
+    COMMUNITY CAMPUS UPDATES
+    ========================================================= */
+
+const communityUpdates = [];
+
+/* =========================================================
+   WEEK DATA
+   ========================================================= */
+
+const weekData = [
+
+    {
+        day: "Mon",
+        date: "22",
+        note: "Usually quieter during early morning and after the lunch period.",
+        event: "",
+        bars: ["mixed","free","mixed","busy","free","mixed","free"]
+    },
+
+    {
+        day: "Tue",
+        date: "23",
+        note: "Usually mixed across the day, with moderate demand around late morning.",
+        event: "",
+        bars: ["free","mixed","busy","mixed","free","mixed","busy"]
+    },
+
+    {
+        day: "Wed",
+        date: "24",
+        note: "Internal assessment day in this sample calendar. Normal patterns may differ.",
+        event: "Internal Assessments",
+        bars: ["busy","busy","full","busy","mixed","busy","mixed"]
+    },
+
+    {
+        day: "Thu",
+        date: "25",
+        note: "College event in this sample calendar. Campus movement may affect normal usage.",
+        event: "College Event",
+        bars: ["mixed","busy","mixed","free","busy","mixed","free"]
+    },
+
+    {
+        day: "Fri",
+        date: "26",
+        note: "Holiday in this sample calendar. Normal class assumptions may not apply.",
+        event: "Holiday",
+        bars: ["free","free","free","free","free","free","free"]
+    },
+
+    {
+        day: "Sat",
+        date: "27",
+        note: "Sample weekend pattern. Actual campus availability depends on operations.",
+        event: "",
+        bars: ["mixed","free","mixed","free","mixed","free","mixed"]
+    },
+
+    {
+        day: "Sun",
+        date: "28",
+        note: "Sample weekend pattern.",
+        event: "",
+        bars: ["free","free","free","free","free","free","free"]
+    }
+
+];
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+let currentFilter = "all";
+
+let currentLabId = null;
+
+let selectedLabStatus = null;
+
+let selectedQueueStatus = null;
+
+const freshnessLimits = {
+    fresh: 10,
+    aging: 30,
+    stale: 60
+};
+
+const localStateKeys = {
+    snapshot: "campusnow-last-snapshot",
+    checked: "campusnow-last-checked",
+    dismissedChanges: "campusnow-dismissed-changes",
+    campusUpdates: "campusnow-community-updates",
+    campusUpdateVotes: "campusnow-community-update-votes"
+};
+
+let lastRefreshAt = null;
+
+let refreshTimer = null;
+
+let refreshCountdownTimer = null;
+
+let lastChangeSnapshot = null;
+
+function getStorage() {
+
+    try {
+        return window.localStorage;
+    } catch (error) {
+        return null;
+    }
+
+}
+
+function readLocalState(key, fallback = null) {
+
+    const storage = getStorage();
+
+    if (!storage) {
+        return fallback;
+    }
+
+    try {
+        return JSON.parse(storage.getItem(key)) || fallback;
+    } catch (error) {
+        return fallback;
+    }
+
+}
+
+function writeLocalState(key, value) {
+
+    const storage = getStorage();
+
+    if (!storage) {
+        return;
+    }
+
+    try {
+        storage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+        // Local storage is optional for the demo experience.
+    }
+
+}
+
+function getFreshnessState(minutesAgo) {
+
+    if (minutesAgo <= freshnessLimits.fresh) {
+        return "fresh";
+    }
+
+    if (minutesAgo <= freshnessLimits.aging) {
+        return "aging";
+    }
+
+    return minutesAgo <= freshnessLimits.stale
+        ? "stale"
+        : "very-stale";
+
+}
+
+function getFreshnessLabel(minutesAgo) {
+
+    const state = getFreshnessState(minutesAgo);
+
+    if (state === "fresh") {
+        return "Fresh";
+    }
+
+    if (state === "aging") {
+        return "Getting old";
+    }
+
+    return "Stale";
+
+}
+
+function getFreshnessMarkup(minutesAgo) {
+
+    const state = getFreshnessState(minutesAgo);
+
+    return '<span class="freshness-chip freshness-' +
+        (state === "very-stale" ? "stale" : state) +
+        '">' +
+        getFreshnessLabel(minutesAgo) +
+        " · Updated " +
+        minutesAgo +
+        " min ago</span>";
+
+}
+
+function getDateKey(date) {
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return year + "-" + month + "-" + day;
+
+}
+
+function getCampusDateLabel(dateKey) {
+
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    if (dateKey === getDateKey(today)) {
+        return "Today";
+    }
+
+    if (dateKey === getDateKey(tomorrow)) {
+        return "Tomorrow";
+    }
+
+    const date = new Date(dateKey + "T12:00:00");
+
+    return date.toLocaleDateString([], {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+    });
+
+}
+
+function getUpdateFreshness(update) {
+
+    return getFreshnessState(update.minutesAgo);
+
+}
+
+function getUpdateWeight(minutesAgo) {
+
+    return Math.exp(-Math.max(0, minutesAgo) / 35);
+
+}
+
+function getCampusUpdateConsensus(update) {
+
+    let supportWeight = 0;
+    let conflictWeight = 0;
+
+    update.reports.forEach(report => {
+        const weight = getUpdateWeight(report.minutesAgo);
+
+        if (report.vote === "support") {
+            supportWeight += weight;
+        } else {
+            conflictWeight += weight;
+        }
+    });
+
+    const supportCount = update.reports.filter(
+        report => report.vote === "support"
+    ).length;
+    const conflictCount = update.reports.filter(
+        report => report.vote === "conflict"
+    ).length;
+    const totalWeight = supportWeight + conflictWeight;
+    const supportShare = totalWeight
+        ? supportWeight / totalWeight
+        : 0;
+    const freshness = getUpdateFreshness(update);
+    const disputed =
+        conflictCount > 0 &&
+        conflictWeight >= supportWeight * 0.75;
+    const confirmed =
+        !disputed &&
+        supportCount >= 6 &&
+        supportShare >= 0.75 &&
+        freshness !== "very-stale";
+    const supported =
+        !disputed &&
+        supportCount >= 2 &&
+        supportShare >= 0.6 &&
+        freshness !== "very-stale";
+
+    let state = "Reported";
+
+    if (disputed) {
+        state = "Disputed";
+    } else if (confirmed) {
+        state = "Confirmed";
+    } else if (supported) {
+        state = "Supported";
+    }
+
+    if (freshness === "very-stale" && state !== "Disputed") {
+        state = "Reported";
+    }
+
+    return {
+        state: state,
+        supportCount: supportCount,
+        conflictCount: conflictCount,
+        supportWeight: supportWeight,
+        conflictWeight: conflictWeight,
+        supportShare: supportShare,
+        freshness: freshness
+    };
+
+}
+
+function getCampusUpdateStateClass(state) {
+
+    return state.toLowerCase();
+
+}
+
+function getCampusUpdateExplanation(update, consensus) {
+
+    const freshness = getFreshnessLabel(update.minutesAgo).toLowerCase();
+    const agreement = consensus.state === "Disputed"
+        ? "Recent reports disagree."
+        : consensus.state === "Confirmed"
+            ? "Strong recent agreement."
+            : consensus.state === "Supported"
+                ? "Multiple recent reports support it."
+                : "There is not enough supporting evidence yet.";
+
+    return consensus.state +
+        " by student reports. " +
+        consensus.supportCount +
+        " supporting reports, " +
+        consensus.conflictCount +
+        " conflicting reports. Reports are " +
+        freshness +
+        ". " +
+        agreement;
+
+}
+
+function saveCommunityUpdates() {
+
+    writeLocalState(localStateKeys.campusUpdates, communityUpdates);
+
+}
+
+function loadCommunityUpdates() {
+
+    const saved = readLocalState(localStateKeys.campusUpdates, []);
+
+    if (!Array.isArray(saved)) {
+        return;
+    }
+
+    saved.forEach(update => {
+        if (
+            update &&
+            update.id &&
+            update.type &&
+            update.date &&
+            Array.isArray(update.reports)
+        ) {
+            if (update.updatedAt) {
+                update.minutesAgo = Math.max(
+                    update.minutesAgo || 0,
+                    Math.round((Date.now() - update.updatedAt) / 60000)
+                );
+            }
+            communityUpdates.push(update);
+        }
+    });
+
+}
+
+function getUrgencyLabel(dateKey) {
+
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    if (dateKey === getDateKey(today)) {
+        return "Important for today";
+    }
+
+    if (dateKey === getDateKey(tomorrow)) {
+        return "Important for tomorrow";
+    }
+
+    return "";
+
+}
+
+function renderCampusUpdates() {
+
+    const list = document.getElementById("campusUpdatesList");
+
+    if (!list) {
+        return;
+    }
+
+    const updates = communityUpdates
+        .slice()
+        .sort((a, b) => a.date.localeCompare(b.date) || b.createdAt - a.createdAt);
+
+    if (!updates.length) {
+        list.innerHTML =
+            '<div class="update-empty">No community updates yet. Add a report when you hear about a holiday, exam, closure, maintenance issue, event, or timing change.</div>';
+        return;
+    }
+
+    list.innerHTML = updates.map(update => {
+        const consensus = getCampusUpdateConsensus(update);
+        const urgency = getUrgencyLabel(update.date);
+        const details = update.details || update.note || "Student report awaiting more detail.";
+
+        return '<article class="campus-update-card ' +
+            (urgency ? "urgent" : "") +
+            '">' +
+            '<div class="campus-update-top">' +
+            '<div>' +
+            (urgency ? '<div class="campus-update-alert">🚨 ' + urgency + '</div>' : "") +
+            '<div class="campus-update-type">' + escapeHTML(update.type) + '</div>' +
+            '<div class="campus-update-title">' + escapeHTML(update.title) + '</div>' +
+            '</div>' +
+            '<div class="campus-update-date">' +
+            getCampusDateLabel(update.date) +
+            (update.time ? '<br>' + escapeHTML(update.time) : "") +
+            '</div>' +
+            '</div>' +
+            '<div class="campus-update-details">' + escapeHTML(details) + '</div>' +
+            '<div class="campus-update-meta">' +
+            '<span class="update-state ' + getCampusUpdateStateClass(consensus.state) + '">' +
+            escapeHTML(consensus.state) +
+            (consensus.state === "Confirmed" ? " by student reports" : "") +
+            '</span>' +
+            '<span>' + consensus.supportCount + ' supporting</span>' +
+            '<span>' + consensus.conflictCount + ' conflicting</span>' +
+            '<span>' + getFreshnessMarkup(update.minutesAgo) + '</span>' +
+            '</div>' +
+            '<div class="campus-update-actions">' +
+            '<button class="btn btn-secondary btn-small" onclick="openCampusUpdate(\'' + update.id + '\')">View details</button>' +
+            '</div>' +
+            '</article>';
+    }).join("");
+
+}
+
+function renderCommunityEventUpdates() {
+
+    const list = document.getElementById("communityEventUpdates");
+
+    if (!list) {
+        return;
+    }
+
+    const updates = communityUpdates.filter(update => [
+        "Holiday",
+        "Exam / Internal Assessment",
+        "College Event",
+        "Timing Change"
+    ].includes(update.type));
+
+    if (!updates.length) {
+        list.innerHTML =
+            '<div class="update-empty">Student-reported holidays, exams, events, and timing changes will appear here separately from the sample events above.</div>';
+        return;
+    }
+
+    list.innerHTML = updates.map(update => {
+        const consensus = getCampusUpdateConsensus(update);
+
+        return '<div class="campus-update-card">' +
+            '<div class="campus-update-top"><div>' +
+            '<div class="campus-update-type">' + escapeHTML(update.type) + '</div>' +
+            '<div class="campus-update-title">' + escapeHTML(update.title) + '</div>' +
+            '</div><div class="campus-update-date">' +
+            getCampusDateLabel(update.date) +
+            '</div></div>' +
+            '<div class="campus-update-meta"><span class="update-state ' +
+            getCampusUpdateStateClass(consensus.state) + '">' +
+            escapeHTML(consensus.state) +
+            '</span><span>' + consensus.supportCount + ' supporting</span><span>' +
+            getFreshnessMarkup(update.minutesAgo) +
+            '</span></div><div class="campus-update-actions"><button class="btn btn-secondary btn-small" onclick="openCampusUpdate(\'' +
+            update.id + '\')">View details</button></div></div>';
+    }).join("");
+
+}
+
+function getCommunityUpdateById(id) {
+
+    return communityUpdates.find(update => update.id === id);
+
+}
+
+let currentCampusUpdateId = null;
+
+function openCampusUpdate(id) {
+
+    const update = getCommunityUpdateById(id);
+
+    if (!update) {
+        return;
+    }
+
+    currentCampusUpdateId = id;
+
+    const consensus = getCampusUpdateConsensus(update);
+    const state = document.getElementById("campusUpdateDetailState");
+
+    document.getElementById("campusUpdateModalKicker").textContent = update.type;
+    document.getElementById("campusUpdateModalTitle").textContent = update.title;
+    document.getElementById("campusUpdateDetailType").textContent = update.type;
+    document.getElementById("campusUpdateDetailTitle").textContent = update.title;
+    document.getElementById("campusUpdateDetailDate").textContent =
+        getCampusDateLabel(update.date) +
+        (update.time ? " · " + update.time : "");
+    document.getElementById("campusUpdateDetailText").textContent =
+        [update.details, update.reason, update.note, update.location ? "Location: " + update.location : "", update.labId ? "Affected lab: " + labs[update.labId]?.name : ""]
+            .filter(Boolean)
+            .join(" · ") || "No additional details were provided.";
+
+    state.textContent = consensus.state +
+        (consensus.state === "Confirmed" ? " by student reports" : "");
+    state.className = "update-state " + getCampusUpdateStateClass(consensus.state);
+
+    document.getElementById("campusUpdateDetailMeta").innerHTML =
+        consensus.supportCount +
+        " supporting · " +
+        consensus.conflictCount +
+        " conflicting · Updated " +
+        update.minutesAgo +
+        " min ago · " +
+        getFreshnessLabel(update.minutesAgo);
+
+    document.getElementById("campusUpdateDetailExplanation").textContent =
+        getCampusUpdateExplanation(update, consensus);
+
+    document.getElementById("campusUpdateDetailView").classList.remove("hidden");
+    document.getElementById("campusUpdateFormView").classList.add("hidden");
+    document.getElementById("campusUpdateModal").classList.add("open");
+    document.body.classList.add("modal-open");
+
+    rememberChecked("campus-update", update.title);
+
+}
+
+function openCampusUpdateReport() {
+
+    currentCampusUpdateId = null;
+    resetCampusUpdateForm();
+    document.getElementById("campusUpdateModalKicker").textContent = "Campus Update";
+    document.getElementById("campusUpdateModalTitle").textContent = "Add Campus Update";
+    document.getElementById("campusUpdateDetailView").classList.add("hidden");
+    document.getElementById("campusUpdateFormView").classList.remove("hidden");
+    document.getElementById("campusUpdateModal").classList.add("open");
+    document.body.classList.add("modal-open");
+
+}
+
+function resetCampusUpdateForm() {
+
+    document.getElementById("campusUpdateType").value = "Holiday";
+    document.getElementById("campusUpdateDateMode").value = "today";
+    document.getElementById("campusUpdateFutureDate").value = "";
+    document.getElementById("campusUpdateTime").value = "";
+    document.getElementById("campusUpdateTitle").value = "";
+    document.getElementById("campusUpdateReason").value = "";
+    document.getElementById("campusUpdateNote").value = "";
+    document.getElementById("campusUpdateLocation").value = "";
+    toggleCampusUpdateFields();
+
+}
+
+function toggleCampusUpdateFields() {
+
+    const type = document.getElementById("campusUpdateType").value;
+    const mode = document.getElementById("campusUpdateDateMode").value;
+    const future = document.getElementById("campusUpdateFutureDateWrap");
+    const lab = document.getElementById("campusUpdateLabWrap");
+
+    future.classList.toggle("hidden", mode !== "future");
+    lab.classList.toggle(
+        "hidden",
+        type !== "Lab Closed" && type !== "Maintenance"
+    );
+
+}
+
+function getCampusUpdateFormDate() {
+
+    const mode = document.getElementById("campusUpdateDateMode").value;
+    const today = new Date();
+
+    if (mode === "today") {
+        return getDateKey(today);
+    }
+
+    if (mode === "tomorrow") {
+        today.setDate(today.getDate() + 1);
+        return getDateKey(today);
+    }
+
+    return document.getElementById("campusUpdateFutureDate").value;
+
+}
+
+function submitCampusUpdate() {
+
+    const type = document.getElementById("campusUpdateType").value;
+    const date = getCampusUpdateFormDate();
+    const time = document.getElementById("campusUpdateTime").value.trim();
+    const titleInput = document.getElementById("campusUpdateTitle").value.trim();
+    const details = document.getElementById("campusUpdateReason").value.trim();
+    const note = document.getElementById("campusUpdateNote").value.trim();
+    const location = document.getElementById("campusUpdateLocation").value.trim();
+    const labId = document.getElementById("campusUpdateLab").value;
+
+    if (!date) {
+        showToast("Choose a date for this campus update.");
+        return;
+    }
+
+    if (!titleInput && type !== "Other Campus Update") {
+        showToast("Add a short title so students know what changed.");
+        return;
+    }
+
+    if (
+        (type === "Exam / Internal Assessment" || type === "Timing Change") &&
+        !time
+    ) {
+        showToast("Add a time for exam or timing-change updates.");
+        return;
+    }
+
+    const update = {
+        id: "campus-update-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+        type: type,
+        date: date,
+        time: time,
+        title: titleInput || type,
+        details: details,
+        reason: details,
+        note: note,
+        location: location,
+        labId: type === "Lab Closed" || type === "Maintenance" ? labId : "",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        minutesAgo: 0,
+        reports: [
+            {
+                vote: "support",
+                minutesAgo: 0,
+                local: true
+            }
+        ]
+    };
+
+    communityUpdates.unshift(update);
+    saveCommunityUpdates();
+    renderCampusUpdates();
+    renderCommunityEventUpdates();
+    closeModal("campusUpdateModal");
+    showToast(navigator.onLine
+        ? "Campus update saved locally for this demo."
+        : "Campus update saved locally while offline; it was not sent to a server.");
+
+}
+
+function voteOnCampusUpdate(support) {
+
+    const update = getCommunityUpdateById(currentCampusUpdateId);
+
+    if (!update) {
+        return;
+    }
+
+    const votes = readLocalState(localStateKeys.campusUpdateVotes, {});
+
+    if (votes[update.id]) {
+        showToast("You have already responded to this update on this browser.");
+        return;
+    }
+
+    update.reports.push({
+        vote: support ? "support" : "conflict",
+        minutesAgo: 0,
+        local: true
+    });
+    update.minutesAgo = 0;
+    update.updatedAt = Date.now();
+    votes[update.id] = support ? "support" : "conflict";
+
+    writeLocalState(localStateKeys.campusUpdateVotes, votes);
+    saveCommunityUpdates();
+    renderCampusUpdates();
+    renderCommunityEventUpdates();
+    openCampusUpdate(update.id);
+    showToast(support
+        ? "Thanks. Your support was recorded locally."
+        : "Thanks. Your dispute was recorded locally.");
+
+}
+
+function buildLocalSnapshot() {
+
+    const labSnapshot = {};
+
+    Object.entries(labs).forEach(([id, lab]) => {
+        const state = getLabDisplayState(lab);
+        labSnapshot[id] = {
+            status: state.status,
+            percent: state.percent
+        };
+    });
+
+    return {
+        labs: labSnapshot,
+        printout: {
+            status: getPrintoutDisplayState().status
+        },
+        savedAt: Date.now()
+    };
+
+}
+
+function formatChange(before, after) {
+
+    if (before === after) {
+        return "";
+    }
+
+    if (typeof before === "number" && typeof after === "number") {
+        const direction = after > before ? "↑" : "↓";
+        return before + "% → " + after + "% available " + direction;
+    }
+
+    return before + " → " + after;
+
+}
+
+function renderLocalChanges(previous, current) {
+
+    if (!previous || !previous.labs || !current) {
+        return;
+    }
+
+    const changes = [];
+
+    Object.entries(current.labs).forEach(([id, after]) => {
+        const before = previous.labs[id];
+
+        if (!before) {
+            return;
+        }
+
+        const change =
+            formatChange(before.percent, after.percent) ||
+            formatChange(before.status, after.status);
+
+        if (change) {
+            changes.push(labs[id].name + " · " + change);
+        }
+    });
+
+    const printoutChange =
+        formatChange(previous.printout?.status, current.printout.status);
+
+    if (printoutChange) {
+        changes.push("Printout · " + printoutChange);
+    }
+
+    if (!changes.length) {
+        return;
+    }
+
+    lastChangeSnapshot = current;
+
+    const strip = document.getElementById("changeStrip");
+    const text = document.getElementById("changeStripText");
+
+    if (strip && text) {
+        text.textContent = changes.join(" · ");
+        strip.classList.remove("hidden");
+    }
+
+}
+
+function dismissChangeStrip() {
+
+    const strip = document.getElementById("changeStrip");
+
+    if (strip) {
+        strip.classList.add("hidden");
+    }
+
+    writeLocalState(localStateKeys.dismissedChanges, {
+        savedAt: lastChangeSnapshot?.savedAt || Date.now()
+    });
+
+}
+
+function rememberChecked(section, label) {
+
+    const checked = readLocalState(localStateKeys.checked, {});
+
+    checked[section] = {
+        label: label,
+        at: Date.now()
+    };
+
+    writeLocalState(localStateKeys.checked, checked);
+
+    const note = document.getElementById("lastCheckedNote");
+
+    if (note && section === "lab") {
+        note.textContent = "Last checked: " + label + " · just now";
+    }
+
+}
+
+function renderLastChecked() {
+
+    const checked = readLocalState(localStateKeys.checked, {});
+    const lab = checked.lab;
+
+    const note = document.getElementById("lastCheckedNote");
+
+    if (!note || !lab) {
+        return;
+    }
+
+    const minutes = Math.max(
+        0,
+        Math.round((Date.now() - lab.at) / 60000)
+    );
+
+    note.textContent =
+        "Last checked: " +
+        lab.label +
+        " · " +
+        (minutes === 0 ? "just now" : minutes + " min ago");
+
+}
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function parseTime(timeString) {
+
+    const parts = timeString.split(":");
+
+    return (
+        Number(parts[0]) * 60 +
+        Number(parts[1])
+    );
+
+}
+
+function minutesToReadable(totalMinutes) {
+
+    totalMinutes = Math.max(0, Math.round(totalMinutes));
+
+    if (totalMinutes < 60) {
+        return totalMinutes + " min";
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+
+    const minutes = totalMinutes % 60;
+
+    if (minutes === 0) {
+        return hours + (hours === 1 ? " hr" : " hrs");
+    }
+
+    return (
+        hours +
+        (hours === 1 ? " hr " : " hrs ") +
+        minutes +
+        " min"
+    );
+
+}
+
+function formatTime12(timeString) {
+
+    const parts = timeString.split(":");
+
+    let hour = Number(parts[0]);
+
+    const minute = parts[1];
+
+    const suffix = hour >= 12 ? "PM" : "AM";
+
+    hour = hour % 12;
+
+    if (hour === 0) {
+        hour = 12;
+    }
+
+    return hour + ":" + minute + " " + suffix;
+
+}
+
+function formatClock(date) {
+
+    return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    });
+
+}
+
+function scrollToSection(id) {
+
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+
+}
+
+/* =========================================================
+   MOBILE MENU
+   ========================================================= */
+
+function toggleMobileMenu() {
+
+    const menu = document.getElementById("mobileMenu");
+
+    menu.classList.toggle("open");
+
+}
+
+function closeMobileMenu() {
+
+    document
+        .getElementById("mobileMenu")
+        .classList.remove("open");
+
+}
+
+/* =========================================================
+   TIMETABLE
+   ========================================================= */
+
+function buildPeriodPills() {
+
+    const container = document.getElementById("periodPills");
+
+    container.innerHTML = "";
+
+    periods.forEach(period => {
+
+        const pill = document.createElement("div");
+
+        pill.className = "period-pill";
+
+        pill.id = "period-pill-" + period.number;
+
+        pill.innerHTML =
+            "P" +
+            period.number;
+
+        container.appendChild(pill);
+
+    });
+
+}
+
+function getCurrentMinutes() {
+
+    const now = new Date();
+
+    return (
+        now.getHours() * 60 +
+        now.getMinutes() +
+        now.getSeconds() / 60
+    );
+
+}
+
+function updateCampusContext() {
+
+    const badge = document.getElementById("campusContext");
+
+    if (!badge) {
+        return;
+    }
+
+    const current = getCurrentMinutes();
+    let label = "Active";
+    const todayKey = getDateKey(new Date());
+    const todayUpdates = communityUpdates
+        .filter(update => update.date === todayKey)
+        .map(update => ({
+            update: update,
+            consensus: getCampusUpdateConsensus(update)
+        }));
+
+    const confirmedHoliday = todayUpdates.find(item =>
+        item.update.type === "Holiday" &&
+        item.consensus.state === "Confirmed"
+    );
+    const supportedExam = todayUpdates.find(item =>
+        item.update.type === "Exam / Internal Assessment" &&
+        ["Supported", "Confirmed"].includes(item.consensus.state)
+    );
+    const confirmedClosure = todayUpdates.find(item =>
+        item.update.type === "Lab Closed" &&
+        item.consensus.state === "Confirmed"
+    );
+
+    if (confirmedHoliday) {
+        label = "Holiday";
+    } else if (supportedExam) {
+        label = "Exam schedule active";
+    } else if (confirmedClosure) {
+        label = "Some labs affected";
+    } else if (current >= parseTime("16:30")) {
+        label = "Labs closed";
+    } else {
+        const today = new Date();
+        const sampleDay = weekData.find(
+            day => day.date === String(today.getDate())
+        );
+
+        if (sampleDay?.event) {
+            if (sampleDay.event === "Holiday") {
+                label = "Holiday";
+            } else if (sampleDay.event === "Internal Assessments") {
+                label = "Exam schedule active";
+            } else {
+                label = sampleDay.event + " active";
+            }
+        }
+    }
+
+    badge.innerHTML =
+        "Campus status · <strong>" +
+        escapeHTML(label) +
+        "</strong>";
+
+}
+
+function updateConnectionStatus() {
+
+    const state = document.getElementById("connectionState");
+    const note = document.getElementById("connectionNote");
+    const online = navigator.onLine;
+
+    if (!state || !note) {
+        return;
+    }
+
+    state.textContent = online ? "Online" : "Offline";
+    state.classList.toggle("offline", !online);
+    note.textContent = online
+        ? "Demo information can refresh while connected."
+        : "Showing cached demo information; it may not be current.";
+
+}
+
+function updateRefreshNote() {
+
+    const note = document.getElementById("dataRefreshNote");
+
+    if (!note) {
+        return;
+    }
+
+    if (!navigator.onLine || !lastRefreshAt) {
+        note.textContent = "Offline · Automatic refresh paused";
+        return;
+    }
+
+    const elapsed = Math.max(
+        0,
+        Math.round((Date.now() - lastRefreshAt) / 1000)
+    );
+
+    note.textContent =
+        "Updated " +
+        (elapsed < 5 ? "just now" : elapsed + " sec ago") +
+        " · Next refresh in " +
+        Math.max(0, 60 - (elapsed % 60)) +
+        " sec";
+
+}
+
+function ageDemoData() {
+
+    Object.values(labs).forEach(lab => {
+        lab.minutesAgo += 1;
+        lab.history.forEach(report => report.minutesAgo += 1);
+    });
+
+    printout.minutesAgo += 1;
+    printout.history.forEach(report => report.minutesAgo += 1);
+
+    communityUpdates.forEach(update => {
+        update.minutesAgo += 1;
+        update.updatedAt = Date.now();
+        update.reports.forEach(report => report.minutesAgo += 1);
+    });
+
+}
+
+function refreshCampusData() {
+
+    if (!navigator.onLine) {
+        updateConnectionStatus();
+        updateRefreshNote();
+        return;
+    }
+
+    ageDemoData();
+    lastRefreshAt = Date.now();
+    refreshLabCards();
+    refreshPrintoutCard();
+    renderCampusUpdates();
+    renderCommunityEventUpdates();
+    updateSnapshot();
+    updateCampusContext();
+    updateRefreshNote();
+
+}
+
+function startDataRefresh() {
+
+    lastRefreshAt = Date.now();
+    updateRefreshNote();
+
+    refreshTimer = setInterval(refreshCampusData, 60000);
+    refreshCountdownTimer = setInterval(updateRefreshNote, 1000);
+
+}
+
+function handleConnectionChange() {
+
+    updateConnectionStatus();
+
+    if (navigator.onLine) {
+        refreshCampusData();
+        showToast("Connection restored. CampusNow refreshed.");
+    }
+
+}
+
+function updateCampus() {
+
+    const now = new Date();
+
+    const current = getCurrentMinutes();
+
+    updateCampusContext();
+
+    document.getElementById("liveClock").textContent =
+        formatClock(now);
+
+    document.querySelectorAll(".period-pill").forEach(pill => {
+        pill.classList.remove("active");
+    });
+
+    const state = document.getElementById("timetableState");
+
+    const detail = document.getElementById("timetableDetail");
+
+    const progress =
+        document.getElementById("timetableProgress");
+
+    const confirmedHoliday = communityUpdates.find(update =>
+        update.type === "Holiday" &&
+        update.date === getDateKey(new Date()) &&
+        getCampusUpdateConsensus(update).state === "Confirmed"
+    );
+
+    if (confirmedHoliday) {
+        state.textContent = "🏖️ Holiday";
+        detail.textContent = "Confirmed by student reports · No regular periods shown";
+        progress.style.width = "0%";
+        return;
+    }
+
+    let handled = false;
+
+    /* BEFORE FIRST PERIOD */
+
+    if (current < parseTime("09:00")) {
+
+        const diff =
+            parseTime("09:00") - current;
+
+        state.textContent =
+            "Period 1 starts in " +
+            Math.max(1, Math.ceil(diff)) +
+            " min · " +
+            formatTime12("09:00");
+
+        detail.textContent =
+            "Classes begin at the first period.";
+
+        progress.style.width = "0%";
+
+        handled = true;
+
+    }
+
+    /* ACTIVE PERIOD */
+
+    if (!handled) {
+
+        periods.forEach((period, index) => {
+
+            const start = parseTime(period.start);
+
+            const end = parseTime(period.end);
+
+            if (current >= start && current < end) {
+
+                handled = true;
+
+                const remaining =
+                    end - current;
+
+                const next =
+                    periods[index + 1];
+
+                const nextText = next
+                    ? "Next period in " +
+                        Math.max(
+                            1,
+                            Math.ceil(parseTime(next.start) - current)
+                        ) +
+                        " min · Period " +
+                        next.number
+                    : "Next period: none today";
+
+                state.textContent =
+                    "Period " +
+                    period.number +
+                    " · Ends in " +
+                    Math.max(
+                        1,
+                        Math.ceil(remaining)
+                    ) +
+                    " min";
+
+                detail.textContent =
+                    nextText;
+
+                const duration =
+                    end - start;
+
+                const elapsed =
+                    current - start;
+
+                progress.style.width =
+                    Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            (elapsed / duration) * 100
+                        )
+                    ) +
+                    "%";
+
+                const pill =
+                    document.getElementById(
+                        "period-pill-" +
+                        period.number
+                    );
+
+                if (pill) {
+                    pill.classList.add("active");
+                }
+
+            }
+
+        });
+
+    }
+
+    /* BETWEEN PERIODS */
+
+    if (!handled) {
+
+        for (let i = 0; i < gaps.length; i++) {
+
+            const gap = gaps[i];
+
+            const start = parseTime(gap.start);
+
+            const end = parseTime(gap.end);
+
+            if (current >= start && current < end) {
+
+                handled = true;
+
+                let nextPeriod = null;
+
+                periods.forEach(period => {
+
+                    if (
+                        !nextPeriod &&
+                        parseTime(period.start) > current
+                    ) {
+                        nextPeriod = period;
+                    }
+
+                });
+
+                const remaining =
+                    end - current;
+
+                state.textContent =
+                    "Between periods";
+
+                if (nextPeriod) {
+
+                    detail.textContent =
+                        "Next period in " +
+                        Math.max(
+                            1,
+                            Math.ceil(parseTime(nextPeriod.start) - current)
+                        ) +
+                        " min · Period " +
+                        nextPeriod.number;
+
+                } else {
+
+                    detail.textContent =
+                        "Short break";
+
+                }
+
+                progress.style.width = "0%";
+
+            }
+
+        }
+
+    }
+
+    /* LUNCH */
+
+    if (
+        !handled &&
+        current >= parseTime("12:35") &&
+        current < parseTime("13:30")
+    ) {
+
+        handled = true;
+
+        const remaining =
+            parseTime("13:30") - current;
+
+        state.textContent =
+            "Lunch Break";
+
+        detail.textContent =
+            "Ends in " +
+            Math.max(
+                1,
+                Math.ceil(remaining)
+            ) +
+            " min · Next period in " +
+            Math.max(
+                1,
+                Math.ceil(remaining)
+            ) +
+            " min · Period 5";
+
+        progress.style.width = "0%";
+
+    }
+
+    /* AFTER FINAL PERIOD */
+
+    if (!handled && current >= parseTime("16:10")) {
+
+        state.textContent =
+            "Classes finished for today";
+
+        detail.textContent =
+            current >= parseTime("16:30")
+                ? "Campus lab hours have ended"
+                : "Labs may remain available until 4:30 PM";
+
+        progress.style.width = "100%";
+
+    }
+
+    const timingChange = communityUpdates.find(update => {
+        const consensus = getCampusUpdateConsensus(update);
+        return update.type === "Timing Change" &&
+            update.date === getDateKey(new Date()) &&
+            ["Supported", "Confirmed"].includes(consensus.state);
+    });
+
+    if (timingChange && !confirmedHoliday) {
+        detail.textContent +=
+            " · Timing change: " +
+            timingChange.title;
+    }
+
+}
+
+function startTimetable() {
+
+    buildPeriodPills();
+
+    updateCampus();
+
+    setInterval(updateCampus, 1000);
+
+}
+
+/* =========================================================
+   LAB FILTERING
+   ========================================================= */
+
+function setFilter(filter, button) {
+
+    currentFilter = filter;
+
+    document
+        .querySelectorAll(".filter-btn")
+        .forEach(btn => {
+            btn.classList.remove("active");
+        });
+
+    button.classList.add("active");
+
+    filterLabs();
+
+}
+
+function filterLabs() {
+
+    const search =
+        document
+            .getElementById("labSearch")
+            .value
+            .trim()
+            .toLowerCase();
+
+    const cards =
+        Array.from(
+            document.querySelectorAll(".lab-card")
+        );
+
+    let visible = 0;
+
+    cards.forEach(card => {
+
+        const name =
+            card.dataset.name.toLowerCase();
+
+        const status =
+            card.dataset.status;
+
+        const matchesSearch =
+            name.includes(search);
+
+        let matchesFilter = true;
+
+        if (currentFilter !== "all") {
+
+            if (
+                currentFilter === "free"
+            ) {
+
+                matchesFilter =
+                    status === "free";
+
+            } else {
+
+                matchesFilter =
+                    status === currentFilter;
+
+            }
+
+        }
+
+        const show =
+            matchesSearch &&
+            matchesFilter;
+
+        card.style.display =
+            show ? "" : "none";
+
+        if (show) {
+            visible++;
+        }
+
+    });
+
+    document
+        .getElementById("noResults")
+        .classList.toggle(
+            "hidden",
+            visible !== 0
+        );
+
+}
+
+function sortLabs() {
+
+    const value =
+        document.getElementById("labSort").value;
+
+    const grid =
+        document.getElementById("labGrid");
+
+    const cards =
+        Array.from(
+            grid.querySelectorAll(".lab-card")
+        );
+
+    cards.sort((a, b) => {
+
+        if (value === "most") {
+
+            return (
+                Number(b.dataset.percent) -
+                Number(a.dataset.percent)
+            );
+
+        }
+
+        if (value === "least") {
+
+            return (
+                Number(a.dataset.percent) -
+                Number(b.dataset.percent)
+            );
+
+        }
+
+        if (value === "recent") {
+
+            return (
+                Number(a.dataset.minutes) -
+                Number(b.dataset.minutes)
+            );
+
+        }
+
+        return 0;
+
+    });
+
+    cards.forEach(card => {
+        grid.appendChild(card);
+    });
+
+    const noResults =
+        document.getElementById("noResults");
+
+    grid.appendChild(noResults);
+
+    filterLabs();
+
+}
+
+/* =========================================================
+   PREDICTION
+   ========================================================= */
+
+function getLikelyFree(lab) {
+
+    const fresh =
+        lab.minutesAgo <= 10;
+
+    const goodPercent =
+        lab.percent >= 55;
+
+    const goodPattern =
+        lab.pattern === "quiet" ||
+        lab.pattern === "veryfree";
+
+    const badPattern =
+        lab.pattern === "busy";
+
+    if (
+        goodPercent &&
+        goodPattern &&
+        fresh
+    ) {
+        return "Likely Free";
+    }
+
+    if (
+        lab.percent >= 50 &&
+        !badPattern
+    ) {
+        return "Possibly Free";
+    }
+
+    if (
+        lab.percent < 35 ||
+        badPattern
+    ) {
+        return "Less Likely Free";
+    }
+
+    return "Possibly Free";
+
+}
+
+/* =========================================================
+   LAB MODAL
+   ========================================================= */
+
+function openLab(id) {
+
+    const lab = labs[id];
+
+    if (!lab) {
+        return;
+    }
+
+    currentLabId = id;
+
+    rememberChecked("lab", lab.name);
+
+    const displayState =
+        getLabDisplayState(lab);
+
+    document.getElementById("labModalTitle").textContent =
+        lab.name;
+
+    document.getElementById("labModalSubtitle").textContent =
+        lab.location;
+
+    document.getElementById("modalPercent").textContent =
+        displayState.percent === null
+            ? "Not applicable"
+            : displayState.percent + "%";
+
+    document.getElementById("modalConfidence").textContent =
+        displayState.confidence;
+
+    document.getElementById("modalUpdated").textContent =
+        getFreshnessLabel(lab.minutesAgo) +
+        " · " +
+        lab.minutesAgo +
+        " min ago";
+
+    document.getElementById("modalConfidenceExplanation").textContent =
+        getLabConfidenceDetails(lab, displayState);
+
+    document.getElementById("modalConsensus").textContent =
+        displayState.consensus.label;
+
+    document.getElementById("modalConsensusSub").textContent =
+        displayState.consensus.description;
+
+    renderPattern(
+        lab.pattern,
+        displayState.status,
+        displayState.percent
+    );
+
+    renderLabHistory(lab);
+
+    resetLabReportForm();
+
+    document
+        .getElementById("labModal")
+        .classList.add("open");
+
+    document.body.classList.add("modal-open");
+
+}
+
+function openLabReport(id) {
+
+    openLab(id);
+
+    setTimeout(() => {
+
+        const form =
+            document.querySelector(
+                "#labModal .report-form"
+            );
+
+        if (form) {
+
+            form.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
+        }
+
+    }, 100);
+
+}
+
+function resetLabReportForm() {
+
+    selectedLabStatus = null;
+
+    document
+        .querySelectorAll(
+            "#labModal [data-lab-status]"
+        )
+        .forEach(button => {
+            button.classList.remove("selected");
+        });
+
+    document.getElementById("labFreeCount").value = "";
+
+    document.getElementById("labNote").value = "";
+
+    document.getElementById("totalSystems").value = "";
+
+    document.getElementById("freeSystems").value = "";
+
+    document.getElementById("calculatorResult").textContent =
+        "Exact system count is not confirmed yet. Enter both values to calculate availability.";
+
+}
+
+function selectLabStatus(button) {
+
+    selectedLabStatus =
+        button.dataset.labStatus;
+
+    document
+        .querySelectorAll(
+            "#labModal [data-lab-status]"
+        )
+        .forEach(item => {
+            item.classList.remove("selected");
+        });
+
+    button.classList.add("selected");
+
+}
+
+function getConfidenceExplanation(confidence) {
+
+    if (confidence === "High") {
+
+        return "High confidence: multiple recent reports agree.";
+
+    }
+
+    if (confidence === "Medium") {
+
+        return "Medium confidence: recent reports mostly agree, but there is some variation.";
+
+    }
+
+    return "Low confidence: reports conflict or the available reports are older.";
+
+}
+
+function getReportWeight(minutesAgo) {
+
+    return Math.exp(-Math.max(0, minutesAgo) / 35);
+
+}
+
+function getLabConfidenceDetails(lab, displayState) {
+
+    const freshness = getFreshnessLabel(lab.minutesAgo).toLowerCase();
+    const conflict = displayState.consensus.label === "Status uncertain";
+
+    return displayState.confidence +
+        " confidence: based on " +
+        lab.reports +
+        " recent reports, " +
+        lab.confirmations +
+        " confirmations, " +
+        displayState.consensus.label.toLowerCase() +
+        ", and reports that are " +
+        freshness +
+        "." +
+        (conflict ? " Recent reports are conflicting." : "");
+
+}
+
+function getLeadingReportStatus(reports) {
+
+    const scores = {};
+
+    reports.forEach(report => {
+
+        const weight = getReportWeight(report.minutesAgo);
+
+        scores[report.status] =
+            (scores[report.status] || 0) + weight;
+
+    });
+
+    return Object.entries(scores)
+        .sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+
+}
+
+function getLabDisplayState(lab) {
+
+    const consensus = getLabConsensus(lab);
+    const leadingStatus = getLeadingReportStatus(lab.history);
+    const freshness = getFreshnessState(lab.minutesAgo);
+    const confirmedClosure = communityUpdates.find(update => {
+        const updateConsensus = getCampusUpdateConsensus(update);
+        return update.type === "Lab Closed" &&
+            update.date === getDateKey(new Date()) &&
+            update.labId &&
+            update.labId === Object.keys(labs).find(id => labs[id] === lab) &&
+            updateConsensus.state === "Confirmed";
+    });
+    const uncertain =
+        consensus.label === "Status uncertain" ||
+        freshness === "very-stale";
+    const special =
+        leadingStatus === "Exam in Progress" ||
+        leadingStatus === "Closed";
+
+    return {
+        status: confirmedClosure
+            ? "Closed"
+            : uncertain
+            ? "Status uncertain"
+            : (leadingStatus || lab.status),
+        confidence: uncertain
+            ? "Low"
+            : consensus.label === "Strong agreement"
+                ? "High"
+                : "Medium",
+        percent: special || uncertain || confirmedClosure ? null : lab.percent,
+        freshness: freshness,
+        consensus: consensus
+    };
+
+}
+
+function getLabConsensus(lab) {
+
+    const scores = {};
+
+    lab.history.forEach(report => {
+
+        const weight = getReportWeight(report.minutesAgo);
+
+        scores[report.status] =
+            (scores[report.status] || 0) +
+            weight;
+
+    });
+
+    const entries =
+        Object.entries(scores)
+            .sort((a,b) => b[1] - a[1]);
+
+    if (!entries.length) {
+
+        return {
+            label: "No consensus",
+            description: "There are not enough recent reports yet."
+        };
+
+    }
+
+    const strongest = entries[0][1];
+
+    const second =
+        entries.length > 1
+            ? entries[1][1]
+            : 0;
+
+    const total =
+        entries.reduce(
+            (sum, entry) => sum + entry[1],
+            0
+        );
+
+    const share =
+        strongest / total;
+
+    const difference =
+        strongest - second;
+
+    if (
+        share >= 0.68 &&
+        difference >= 0.35
+    ) {
+
+        return {
+            label: "Strong agreement",
+            description:
+                "Recent reports mostly point toward the same status."
+        };
+
+    }
+
+    if (
+        share >= 0.6
+    ) {
+
+        return {
+            label: "Moderate agreement",
+            description:
+                "There is a leading status, but some recent reports differ."
+        };
+
+    }
+
+    return {
+        label: "Status uncertain",
+        description:
+            "Recent reports are conflicting, so one report is not allowed to override the group."
+    };
+
+}
+
+function renderPattern(pattern, currentStatus, currentPercent) {
+
+    const container =
+        document.getElementById("modalPattern");
+
+    const times = [
+        "9:00",
+        "9:55",
+        "10:50",
+        "11:45",
+        "12:35",
+        "1:30",
+        "2:25",
+        "3:20",
+        "4:10"
+    ];
+
+    const patterns = {
+        quiet: [
+            "Free", "Free", "Busy", "Busy", "Free",
+            "Very Free", "Free", "Very Free", "Free"
+        ],
+        mixed: [
+            "Free", "Busy", "Free", "Busy", "Free",
+            "Busy", "Free", "Busy", "Free"
+        ],
+        veryfree: [
+            "Very Free", "Very Free", "Free", "Very Free", "Free",
+            "Very Free", "Very Free", "Free", "Very Free"
+        ],
+        busy: [
+            "Busy", "Busy", "Full", "Busy", "Busy",
+            "Busy", "Full", "Busy", "Busy"
+        ]
+    };
+
+    const statuses =
+        patterns[pattern] ||
+        patterns.mixed;
+
+    const yPositions = {
+        "Very Free": 42,
+        "Free": 88,
+        "Busy": 134,
+        "Full": 180,
+        "Exam in Progress": 134,
+        "Closed": 180
+    };
+
+    const left = 112;
+    const right = 870;
+    const chartWidth = right - left;
+    const xStep = chartWidth / (times.length - 1);
+    const points = statuses.map((status, index) => ({
+        status: status,
+        x: left + (index * xStep),
+        y: yPositions[status]
+    }));
+
+    const pointString = points
+        .map(point => point.x + "," + point.y)
+        .join(" ");
+
+    const gridLabels = [
+        ["Very Free", 42],
+        ["Free", 88],
+        ["Busy", 134],
+        ["Full", 180]
+    ];
+
+    const grid = gridLabels
+        .map(label =>
+            '<line class="pattern-grid-line" x1="' +
+            left +
+            '" x2="' +
+            right +
+            '" y1="' +
+            label[1] +
+            '" y2="' +
+            label[1] +
+            '"></line>' +
+            '<text class="pattern-axis-label" x="8" y="' +
+            (label[1] + 4) +
+            '">' +
+            label[0] +
+            '</text>'
+        )
+        .join("");
+
+    const timeLabels = times
+        .map((time, index) =>
+            '<text class="pattern-time-label" x="' +
+            points[index].x +
+            '" y="224">' +
+            time +
+            '</text>'
+        )
+        .join("");
+
+    const circles = points
+        .map((point, index) =>
+            '<circle class="pattern-point" cx="' +
+            point.x +
+            '" cy="' +
+            point.y +
+            '" r="5">' +
+            '<title>' +
+            times[index] +
+            " · " +
+            point.status +
+            '</title></circle>'
+        )
+        .join("");
+
+    const specialStatus =
+        currentStatus === "Exam in Progress" ||
+        currentStatus === "Closed";
+
+    const eventMarker = specialStatus
+        ? '<line class="pattern-event-line" x1="' +
+            points[4].x +
+            '" x2="' +
+            points[4].x +
+            '" y1="18" y2="204"></line>' +
+            '<text class="pattern-event-label" x="' +
+            points[4].x +
+            '" y="14">' +
+            currentStatus +
+            '</text>'
+        : "";
+
+    const note = specialStatus
+        ? currentStatus +
+            " is shown as an event marker; no occupancy percentage is inferred."
+        : "Historical pattern is qualitative. Current estimate: " +
+            (
+                currentPercent === null
+                    ? "Not applicable"
+                    : currentPercent + "% available"
+            ) +
+            ".";
+
+    container.innerHTML =
+        '<div class="pattern-chart">' +
+        '<svg viewBox="0 0 900 245" role="img" aria-label="Qualitative lab availability pattern across the CampusNow timetable">' +
+        grid +
+        '<polyline class="pattern-line" points="' +
+        pointString +
+        '"></polyline>' +
+        circles +
+        eventMarker +
+        timeLabels +
+        '</svg>' +
+        '<div class="pattern-chart-note">' +
+        note +
+        '</div>' +
+        '</div>';
+
+}
+
+function renderLabHistory(lab) {
+
+    const container =
+        document.getElementById("labHistory");
+
+    container.innerHTML = "";
+
+    lab.history.forEach(report => {
+
+        const item =
+            document.createElement("div");
+
+        item.className =
+            "history-item";
+
+        item.innerHTML =
+            "<span>" +
+            escapeHTML(report.status) +
+            "</span>" +
+            "<span class='history-time'>" +
+            report.minutesAgo +
+            " min ago" +
+            "</span>";
+
+        container.appendChild(item);
+
+    });
+
+}
+
+/* =========================================================
+   SYSTEM CALCULATOR
+   ========================================================= */
+
+function calculateSystems() {
+
+    const totalInput =
+        document.getElementById("totalSystems").value;
+
+    const freeInput =
+        document.getElementById("freeSystems").value;
+
+    const total =
+        Number(
+            document.getElementById("totalSystems").value
+        );
+
+    const free =
+        Number(
+            document.getElementById("freeSystems").value
+        );
+
+    const result =
+        document.getElementById("calculatorResult");
+
+    if (totalInput === "" || freeInput === "") {
+
+        result.textContent =
+            "Exact system count is not confirmed yet. Enter total systems to calculate.";
+
+        return;
+
+    }
+
+    if (
+        total <= 0 ||
+        free < 0 ||
+        free > total
+    ) {
+
+        result.textContent =
+            "Please enter valid numbers. Free systems cannot exceed total systems.";
+
+        return;
+
+    }
+
+    const percentage =
+        Math.round(
+            (free / total) * 100
+        );
+
+    result.textContent =
+        free +
+        " of " +
+        total +
+        " systems are free · " +
+        percentage +
+        "% available.";
+
+}
+
+/* =========================================================
+   LAB REPORT SUBMISSION
+   ========================================================= */
+
+function submitLabReport() {
+
+    if (!currentLabId) {
+        return;
+    }
+
+    if (!selectedLabStatus) {
+
+        showToast(
+            "Choose a lab status before submitting."
+        );
+
+        return;
+
+    }
+
+    const lab =
+        labs[currentLabId];
+
+    const freeCount =
+        document.getElementById("labFreeCount").value;
+
+    const note =
+        document.getElementById("labNote").value.trim();
+
+    lab.history.unshift({
+
+        status: selectedLabStatus,
+
+        minutesAgo: 0
+
+    });
+
+    lab.history =
+        lab.history.slice(0, 12);
+
+    lab.reports += 1;
+
+    lab.minutesAgo = 0;
+
+    lab.confirmations = 0;
+
+    /*
+       This is intentionally a demo behavior.
+       In the real backend, this report would be stored
+       and consensus recalculated server-side.
+    */
+
+    showToast(
+        "Anonymous lab report submitted. Demo data updated locally."
+    );
+
+    closeModal("labModal");
+
+    refreshLabCards();
+
+}
+
+/* =========================================================
+   CONFIRM LAB
+   ========================================================= */
+
+function confirmLab(stillAccurate) {
+
+    if (!currentLabId) {
+        return;
+    }
+
+    const lab =
+        labs[currentLabId];
+
+    if (stillAccurate) {
+
+        lab.confirmations += 1;
+        lab.minutesAgo = 0;
+
+        showToast(
+            "Thanks. Your confirmation was recorded for this demo."
+        );
+
+    } else {
+
+        showToast(
+            "Thanks. You can submit a changed status below."
+        );
+
+        const form =
+            document.querySelector(
+                "#labModal .report-form"
+            );
+
+        if (form) {
+
+            form.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+
+        }
+
+    }
+
+}
+
+/* =========================================================
+   PRINTOUT MODAL
+   ========================================================= */
+
+function openPrintoutDetails() {
+
+    rememberChecked("printout", "Admin Printout");
+
+    renderPrintoutModal();
+
+    document
+        .getElementById("printoutModal")
+        .classList.add("open");
+
+    document.body.classList.add("modal-open");
+
+}
+
+function openPrintoutReport() {
+
+    rememberChecked("printout", "Admin Printout");
+
+    renderPrintoutModal();
+
+    resetPrintoutForm();
+
+    document
+        .getElementById("printoutModal")
+        .classList.add("open");
+
+    document.body.classList.add("modal-open");
+
+}
+
+function renderPrintoutModal() {
+
+    const displayState =
+        getPrintoutDisplayState();
+
+    document.getElementById("printModalQueue").textContent =
+        displayState.status;
+
+    document.getElementById("printModalPeople").textContent =
+        displayState.people === null
+            ? "Not reported"
+            : "~" + displayState.people;
+
+    document.getElementById("printModalConfidence").textContent =
+        displayState.confidence;
+
+    document.getElementById("printModalExplanation").textContent =
+        getPrintoutConfidenceDetails(displayState);
+
+    document.getElementById("printModalConsensus").textContent =
+        displayState.consensus.label;
+
+    document.getElementById("printModalConsensusSub").textContent =
+        displayState.consensus.description;
+
+    renderPrintoutHistory();
+
+}
+
+function getPrintoutConsensus() {
+
+    const scores = {};
+
+    printout.history.forEach(report => {
+
+        const weight = getReportWeight(report.minutesAgo);
+
+        scores[report.status] =
+            (scores[report.status] || 0) +
+            weight;
+
+    });
+
+    const entries =
+        Object.entries(scores)
+            .sort((a,b) => b[1] - a[1]);
+
+    if (!entries.length) {
+
+        return {
+            label: "No consensus",
+            description: "There are not enough recent reports yet."
+        };
+
+    }
+
+    const strongest =
+        entries[0][1];
+
+    const second =
+        entries.length > 1
+            ? entries[1][1]
+            : 0;
+
+    const total =
+        entries.reduce(
+            (sum, entry) => sum + entry[1],
+            0
+        );
+
+    const share =
+        strongest / total;
+
+    const difference =
+        strongest - second;
+
+    if (
+        share >= 0.68 &&
+        difference >= 0.35
+    ) {
+
+        return {
+            label: "Strong agreement",
+            description:
+                "Recent reports mostly point toward the same queue status."
+        };
+
+    }
+
+    if (
+        share >= 0.6
+    ) {
+
+        return {
+            label: "Moderate agreement",
+            description:
+                "There is a leading queue status, but some recent reports differ."
+        };
+
+    }
+
+    return {
+        label: "Status uncertain",
+        description:
+            "Recent queue reports conflict, so one report does not override the group."
+    };
+
+}
+
+function getPrintoutDisplayState() {
+
+    const consensus = getPrintoutConsensus();
+    const leadingStatus =
+        getLeadingReportStatus(printout.history);
+    const freshness = getFreshnessState(printout.minutesAgo);
+    const uncertain =
+        consensus.label === "Status uncertain" ||
+        freshness === "very-stale";
+    const leadingReport = printout.history.find(
+        report => report.status === leadingStatus
+    );
+
+    return {
+        status: uncertain
+            ? "Status uncertain"
+            : (leadingStatus || printout.status),
+        people: uncertain
+            ? null
+            : (leadingReport?.people ?? null),
+        confidence: uncertain
+            ? "Low"
+            : consensus.label === "Strong agreement"
+                ? "High"
+                : "Medium",
+        freshness: freshness,
+        consensus: consensus
+    };
+
+}
+
+function getPrintoutConfidenceDetails(displayState) {
+
+    return displayState.confidence +
+        " confidence: based on " +
+        printout.history.length +
+        " recent reports, " +
+        printout.confirmations +
+        " confirmations, " +
+        displayState.consensus.label.toLowerCase() +
+        ", and reports that are " +
+        getFreshnessLabel(printout.minutesAgo).toLowerCase() +
+        "." +
+        (displayState.consensus.label === "Status uncertain"
+            ? " Recent reports are conflicting."
+            : "");
+
+}
+
+function openConfidenceExplanation(type, id) {
+
+    let title = "Confidence";
+    let explanation = "Confidence is based on recent anonymous reports.";
+
+    if (type === "lab" && labs[id]) {
+        const lab = labs[id];
+        const state = getLabDisplayState(lab);
+        title = state.confidence + " confidence · " + lab.name;
+        explanation = getLabConfidenceDetails(lab, state);
+    }
+
+    if (type === "printout") {
+        const state = getPrintoutDisplayState();
+        title = state.confidence + " confidence · Printout";
+        explanation = getPrintoutConfidenceDetails(state);
+    }
+
+    document.getElementById("confidencePopoverTitle").textContent = title;
+    document.getElementById("confidencePopoverText").textContent = explanation;
+    document.getElementById("confidencePopover").classList.remove("hidden");
+
+    setTimeout(() => {
+        document.getElementById("confidencePopover").classList.add("hidden");
+    }, 6500);
+
+}
+
+function renderPrintoutHistory() {
+
+    const container =
+        document.getElementById("printoutHistory");
+
+    container.innerHTML = "";
+
+    printout.history.forEach(report => {
+
+        const item =
+            document.createElement("div");
+
+        item.className =
+            "history-item";
+
+        let peopleText = "";
+
+        if (report.people !== null) {
+
+            peopleText =
+                " · " +
+                report.people +
+                " waiting";
+
+        }
+
+        item.innerHTML =
+            "<span>" +
+            escapeHTML(report.status) +
+            escapeHTML(peopleText) +
+            "</span>" +
+            "<span class='history-time'>" +
+            report.minutesAgo +
+            " min ago" +
+            "</span>";
+
+        container.appendChild(item);
+
+    });
+
+}
+
+function resetPrintoutForm() {
+
+    selectedQueueStatus = null;
+
+    document
+        .querySelectorAll(
+            "#printoutModal [data-queue-status]"
+        )
+        .forEach(button => {
+            button.classList.remove("selected");
+        });
+
+    document.getElementById("queuePeople").value = "";
+
+    document.getElementById("lunchAvailability").value =
+        "unknown";
+
+    document.getElementById("printoutNote").value = "";
+
+}
+
+function selectQueueStatus(button) {
+
+    selectedQueueStatus =
+        button.dataset.queueStatus;
+
+    document
+        .querySelectorAll(
+            "#printoutModal [data-queue-status]"
+        )
+        .forEach(item => {
+            item.classList.remove("selected");
+        });
+
+    button.classList.add("selected");
+
+}
+
+function submitPrintoutReport() {
+
+    if (!selectedQueueStatus) {
+
+        showToast(
+            "Choose Free, Short Queue or Long Queue."
+        );
+
+        return;
+
+    }
+
+    const peopleInput =
+        document.getElementById("queuePeople").value;
+
+    let people = null;
+
+    if (peopleInput !== "") {
+
+        people =
+            Number(peopleInput);
+
+        if (
+            people < 0 ||
+            !Number.isFinite(people)
+        ) {
+
+            showToast(
+                "Enter a valid number of people."
+            );
+
+            return;
+
+        }
+
+    }
+
+    const lunch =
+        document.getElementById(
+            "lunchAvailability"
+        ).value;
+
+    const note =
+        document.getElementById(
+            "printoutNote"
+        ).value.trim();
+
+    printout.history.unshift({
+
+        status: selectedQueueStatus,
+
+        people: people,
+
+        minutesAgo: 0
+
+    });
+
+    printout.history =
+        printout.history.slice(0, 12);
+
+    printout.minutesAgo = 0;
+
+    if (lunch !== "unknown") {
+        printout.lunch = lunch;
+    }
+
+    printout.confirmations = 0;
+
+    /*
+       Demo-only local update.
+       A real backend will calculate consensus
+       from all stored reports.
+    */
+
+    showToast(
+        "Anonymous printout report submitted. Demo data updated locally."
+    );
+
+    closeModal("printoutModal");
+
+    refreshPrintoutCard();
+
+}
+
+/* =========================================================
+   CONFIRM PRINTOUT
+   ========================================================= */
+
+function confirmPrintout(stillAccurate) {
+
+    if (stillAccurate) {
+
+        printout.confirmations += 1;
+        printout.minutesAgo = 0;
+
+        showToast(
+            "Thanks. Your printout confirmation was recorded."
+        );
+
+    } else {
+
+        showToast(
+            "Thanks. Submit the changed queue status below."
+        );
+
+        setTimeout(() => {
+
+            openPrintoutReport();
+
+        }, 150);
+
+    }
+
+}
+
+/* =========================================================
+   REFRESH PRINT CARD
+   ========================================================= */
+
+function refreshPrintoutCard() {
+
+    const displayState =
+        getPrintoutDisplayState();
+
+    const status =
+        document.getElementById(
+            "printoutStatus"
+        );
+
+    const people =
+        document.getElementById(
+            "printoutPeople"
+        );
+
+    const confidence =
+        document.getElementById(
+            "printoutConfidence"
+        );
+
+    const agreement =
+        document.getElementById(
+            "printoutAgreement"
+        );
+
+    const updated =
+        document.getElementById(
+            "printoutUpdated"
+        );
+
+    status.textContent =
+        displayState.status;
+
+    status.className =
+        "queue-status " +
+        getQueueClass(displayState.status);
+
+    if (
+        displayState.people === null
+    ) {
+
+        people.textContent =
+            "People waiting: Not reported";
+
+    } else if (
+        displayState.people === 0
+    ) {
+
+        people.textContent =
+            "No people reported waiting";
+
+    } else {
+
+        people.textContent =
+            "~" +
+            displayState.people +
+            " people waiting";
+
+    }
+
+    confidence.textContent =
+        "Confidence: " +
+        displayState.confidence;
+
+    confidence.onclick = () =>
+        openConfidenceExplanation("printout");
+    confidence.setAttribute("role", "button");
+    confidence.setAttribute("tabindex", "0");
+
+    agreement.textContent =
+        displayState.consensus.label;
+
+    updated.innerHTML =
+        getFreshnessMarkup(printout.minutesAgo);
+
+    const lunch =
+        document.getElementById("printoutLunch");
+
+    if (lunch) {
+
+        lunch.innerHTML =
+            "Lunch availability: <strong class=\"lunch-unknown\">" +
+            (
+                printout.lunch === "available"
+                    ? "Available"
+                    : printout.lunch === "unavailable"
+                        ? "Not available"
+                        : "To be confirmed"
+            ) +
+            "</strong>";
+
+    }
+
+}
+
+function getQueueClass(status) {
+
+    if (status === "Free") {
+        return "queue-free";
+    }
+
+    if (status === "Short Queue") {
+        return "queue-short";
+    }
+
+    if (status === "Long Queue") {
+        return "queue-long";
+    }
+
+    return "queue-uncertain";
+
+}
+
+/* =========================================================
+   REFRESH LAB CARDS
+   ========================================================= */
+
+function refreshLabCards() {
+
+    Object.keys(labs).forEach(id => {
+
+        const lab =
+            labs[id];
+
+        const displayState =
+            getLabDisplayState(lab);
+
+        const card =
+            document.querySelector(
+                '.lab-card[data-id="' +
+                id +
+                '"]'
+            );
+
+        if (!card) {
+            return;
+        }
+
+        const percentElement =
+            card.querySelector(
+                ".lab-percent"
+            );
+
+        if (percentElement) {
+
+            percentElement.textContent =
+                displayState.percent === null
+                    ? "Not applicable"
+                    : displayState.percent + "%";
+
+        }
+
+        const fill =
+            card.querySelector(
+                ".percent-fill"
+            );
+
+        if (fill) {
+
+            fill.style.width =
+                displayState.percent === null
+                    ? "0%"
+                    : displayState.percent + "%";
+
+        }
+
+        const meta =
+            card.querySelectorAll(
+                ".meta-chip"
+            );
+
+        if (meta.length >= 3) {
+
+            meta[0].innerHTML =
+                '<span role="button" tabindex="0" onclick="openConfidenceExplanation(\'lab\',\'' +
+                id +
+                '\')">Confidence: <strong>' +
+                escapeHTML(displayState.confidence) +
+                "</strong></span>";
+
+            meta[1].textContent =
+                lab.reports +
+                " reports";
+
+            meta[2].innerHTML =
+                getFreshnessMarkup(lab.minutesAgo);
+
+        }
+
+        const statusPill =
+            card.querySelector(".status-pill");
+
+        if (statusPill) {
+
+            statusPill.textContent =
+                displayState.status;
+
+            statusPill.className =
+                "status-pill " +
+                getLabStatusClass(displayState.status);
+
+        }
+
+        card.dataset.status =
+            getLabFilterKey(displayState.status);
+
+        card.dataset.percent =
+            displayState.percent === null
+                ? "-1"
+                : displayState.percent;
+
+        const trend =
+            card.querySelector(".trend");
+
+        if (trend) {
+
+            if (lab.trend === "Improving") {
+
+                trend.textContent =
+                    "↗ Improving";
+
+                trend.className =
+                    "trend trend-up";
+
+            } else if (
+                lab.trend === "Getting busy"
+            ) {
+
+                trend.textContent =
+                    "↘ Getting busy";
+
+                trend.className =
+                    "trend trend-down";
+
+            } else {
+
+                trend.textContent =
+                    "→ Stable";
+
+                trend.className =
+                    "trend trend-stable";
+
+            }
+
+        }
+
+    });
+
+    updateSnapshot();
+
+}
+
+function getLabStatusClass(status) {
+
+    if (status === "Very Free" || status === "Free") {
+        return "status-free";
+    }
+
+    if (status === "Busy" || status === "Status uncertain") {
+        return "status-busy";
+    }
+
+    if (status === "Full") {
+        return "status-full";
+    }
+
+    if (status === "Exam in Progress") {
+        return "status-exam";
+    }
+
+    if (status === "Closed") {
+        return "status-closed";
+    }
+
+    return "status-free";
+
+}
+
+function getLabFilterKey(status) {
+
+    if (status === "Very Free") {
+        return "veryfree";
+    }
+
+    return status.toLowerCase().replace(/\s+/g, "-");
+
+}
+
+/* =========================================================
+   SNAPSHOT
+   ========================================================= */
+
+function updateSnapshot() {
+
+    const labList =
+        Object.values(labs);
+
+    const percentageLabs =
+        labList
+            .map(lab => getLabDisplayState(lab))
+            .filter(state => state.percent !== null);
+
+    const average = percentageLabs.length
+        ? Math.round(
+            percentageLabs.reduce(
+                (sum, lab) =>
+                    sum + lab.percent,
+                0
+            ) / percentageLabs.length
+        )
+        : null;
+
+    const freeLabs =
+        labList.filter(lab => {
+            const state = getLabDisplayState(lab);
+            return state.percent !== null && state.percent >= 55;
+        }).length;
+
+    const recent =
+        labList.filter(lab =>
+            getFreshnessState(lab.minutesAgo) === "fresh"
+        ).length;
+
+    document.getElementById(
+        "snapshotLabs"
+    ).textContent =
+        labList.length;
+
+    document.getElementById(
+        "snapshotAverage"
+    ).textContent =
+        average === null
+            ? "--"
+            : average + "%";
+
+    document.getElementById(
+        "snapshotFree"
+    ).textContent =
+        freeLabs;
+
+    document.getElementById(
+        "snapshotFresh"
+    ).textContent =
+        recent;
+
+}
+
+/* =========================================================
+   WEEKLY UI
+   ========================================================= */
+
+function renderWeek() {
+
+    const days =
+        document.getElementById(
+            "weekDays"
+        );
+
+    days.innerHTML = "";
+
+    weekData.forEach(
+        (day, index) => {
+
+            const button =
+                document.createElement("button");
+
+            button.className =
+                "day-btn" +
+                (
+                    index === 2
+                        ? " active"
+                        : ""
+                );
+
+            button.innerHTML =
+                '<span class="day-name">' +
+                day.day +
+                '</span>' +
+                '<span class="day-date">' +
+                day.date +
+                '</span>' +
+                (
+                    day.event
+                        ? '<span class="day-event-dot"></span>'
+                        : ''
+                );
+
+            button.onclick =
+                () => selectWeekDay(
+                    index
+                );
+
+            days.appendChild(button);
+
+        }
+    );
+
+    selectWeekDay(2);
+
+}
+
+function selectWeekDay(index) {
+
+    const day =
+        weekData[index];
+
+    document
+        .querySelectorAll(".day-btn")
+        .forEach((button, i) => {
+
+            button.classList.toggle(
+                "active",
+                i === index
+            );
+
+        });
+
+    document.getElementById(
+        "weekDetailTitle"
+    ).textContent =
+        day.day +
+        "day · " +
+        day.date;
+
+    document.getElementById(
+        "weekDetailNote"
+    ).textContent =
+        day.note;
+
+    const timeline =
+        document.getElementById(
+            "weekTimeline"
+        );
+
+    timeline.innerHTML = "";
+
+    day.bars.forEach(
+        type => {
+
+            const segment =
+                document.createElement("div");
+
+            segment.className =
+                "week-segment segment-" +
+                type;
+
+            timeline.appendChild(
+                segment
+            );
+
+        }
+    );
+
+}
+
+/* =========================================================
+   MODAL CONTROLS
+   ========================================================= */
+
+function closeModal(id) {
+
+    const modal =
+        document.getElementById(id);
+
+    modal.classList.remove("open");
+
+    document.body.classList.remove(
+        "modal-open"
+    );
+
+}
+
+function closeModalOutside(
+    event,
+    id
+) {
+
+    if (
+        event.target.id === id
+    ) {
+
+        closeModal(id);
+
+    }
+
+}
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            closeModal("labModal");
+
+            closeModal("printoutModal");
+
+        }
+
+    }
+);
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+function showToast(message) {
+
+    const container =
+        document.getElementById(
+            "toastContainer"
+        );
+
+    const toast =
+        document.createElement("div");
+
+    toast.className =
+        "toast";
+
+    toast.textContent =
+        message;
+
+    container.appendChild(
+        toast
+    );
+
+    setTimeout(
+        () => {
+
+            toast.remove();
+
+        },
+        3700
+    );
+
+}
+
+/* =========================================================
+   SECURITY HELPER
+   ========================================================= */
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+function showInitialSkeletons() {
+
+    const targets = [
+        ...document.querySelectorAll(".lab-card"),
+        document.querySelector(".printout-card"),
+        document.getElementById("timetableState"),
+        document.getElementById("timetableDetail")
+    ].filter(Boolean);
+
+    targets.forEach(target => target.classList.add("skeleton"));
+
+    setTimeout(() => {
+        targets.forEach(target => target.classList.remove("skeleton"));
+    }, 180);
+
+}
+
+function initializeLocalMemory() {
+
+    const previous = readLocalState(localStateKeys.snapshot);
+    const current = buildLocalSnapshot();
+    const dismissed = readLocalState(localStateKeys.dismissedChanges);
+
+    if (!dismissed || dismissed.savedAt !== current.savedAt) {
+        renderLocalChanges(previous, current);
+    }
+
+    writeLocalState(localStateKeys.snapshot, current);
+    renderLastChecked();
+
+}
+
+function registerServiceWorker() {
+
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./service-worker.js").catch(() => {
+            // The app remains fully usable when opened without a service worker host.
+        });
+    }
+
+}
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        showInitialSkeletons();
+
+        updateConnectionStatus();
+
+        window.addEventListener("online", handleConnectionChange);
+        window.addEventListener("offline", handleConnectionChange);
+
+        loadCommunityUpdates();
+
+        renderCampusUpdates();
+
+        renderCommunityEventUpdates();
+
+        startTimetable();
+
+        renderWeek();
+
+        updateSnapshot();
+
+        refreshLabCards();
+
+        refreshPrintoutCard();
+
+        filterLabs();
+
+        initializeLocalMemory();
+
+        startDataRefresh();
+
+        registerServiceWorker();
+
+    }
+);
+
+</script>
+
+</body>
+</html>
