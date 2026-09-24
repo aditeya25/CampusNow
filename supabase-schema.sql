@@ -28,8 +28,9 @@ create table if not exists public.campus_update_reports (
 create table if not exists public.lab_reports (
     id text primary key,
     lab_id text not null,
-    status text not null check (status in ('Very Free', 'Free', 'Busy', 'Full', 'Exam in Progress', 'Closed')),
+    status text not null check (status in ('Very Free', 'Free', 'Busy', 'Full', 'Exam in Progress', 'Closed', 'Exact Availability')),
     free_count integer,
+    total_systems integer,
     note text,
     created_at timestamptz not null default now()
 );
@@ -55,6 +56,18 @@ create table if not exists public.printout_confirmations (
     still_accurate boolean not null,
     created_at timestamptz not null default now()
 );
+
+-- Add this column separately when upgrading an existing lab_reports table.
+alter table public.lab_reports
+add column if not exists total_systems integer;
+
+-- Existing installations must also allow the explicit exact-mode report status.
+alter table public.lab_reports
+drop constraint if exists lab_reports_status_check;
+
+alter table public.lab_reports
+add constraint lab_reports_status_check
+check (status in ('Very Free', 'Free', 'Busy', 'Full', 'Exam in Progress', 'Closed', 'Exact Availability'));
 
 alter table public.campus_updates enable row level security;
 alter table public.campus_update_reports enable row level security;

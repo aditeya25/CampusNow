@@ -1940,6 +1940,11 @@ a {
     color: var(--mint);
 }
 
+.option-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
 .field {
     margin-top: 13px;
 }
@@ -4013,7 +4018,10 @@ a {
 
                 <div class="report-form">
 
-                    <div class="option-grid">
+                    <div
+                        class="option-grid"
+                        id="labQuickStatusOptions"
+                    >
 
                         <button
                             class="option-btn"
@@ -4062,6 +4070,79 @@ a {
                         >
                             Closed
                         </button>
+
+                    </div>
+
+                    <div
+                        class="calculator-result"
+                        id="labQualitativeAvailability"
+                    >
+                        Choose a qualitative status or enter exact systems.
+                    </div>
+
+                    <div class="field">
+
+                        <label for="labAvailabilityMode">
+                            Reporting mode
+                        </label>
+
+                        <select
+                            id="labAvailabilityMode"
+                            onchange="toggleLabAvailabilityMode()"
+                        >
+                            <option value="qualitative">
+                                Quick Status
+                            </option>
+                            <option value="exact">
+                                Exact Availability
+                            </option>
+                        </select>
+
+                    </div>
+
+                    <div
+                        class="field hidden"
+                        id="labExactAvailability"
+                    >
+
+                        <div class="system-grid">
+
+                            <div class="field" style="margin-top:0;">
+                                <label for="reportTotalSystems">
+                                    Total systems
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="reportTotalSystems"
+                                    min="1"
+                                    placeholder="Example: 50"
+                                    oninput="calculateReportAvailability()"
+                                >
+                            </div>
+
+                            <div class="field" style="margin-top:0;">
+                                <label for="reportFreeSystems">
+                                    Free systems
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="reportFreeSystems"
+                                    min="0"
+                                    placeholder="Example: 23"
+                                    oninput="calculateReportAvailability()"
+                                >
+                            </div>
+
+                        </div>
+
+                        <div
+                            class="calculator-result"
+                            id="reportCalculatorResult"
+                        >
+                            Enter total and free systems to calculate availability.
+                        </div>
 
                     </div>
 
@@ -4668,6 +4749,15 @@ const printout = {
 
 const communityUpdates = [];
 
+const qualitativeAvailabilityPercentages = {
+    "Very Free": 75,
+    "Free": 50,
+    "Busy": 25,
+    "Full": 0,
+    "Exam in Progress": null,
+    "Closed": null
+};
+
 /* =========================================================
    WEEK DATA
    ========================================================= */
@@ -4993,6 +5083,9 @@ async function syncSharedLabAndPrintoutData() {
                 status: row.status,
                 minutesAgo: getMinutesSince(row.created_at),
                 freeCount: row.free_count,
+                freeSystems: row.free_count,
+                totalSystems: row.total_systems,
+                availabilityMode: row.total_systems ? "exact" : "qualitative",
                 note: row.note || ""
             });
             lab.reports += 1;
@@ -5033,7 +5126,7 @@ async function syncSharedLabAndPrintoutData() {
 
 }
 
-async function publishSharedLabReport(labId, report, freeCount, note) {
+async function publishSharedLabReport(labId, report, freeCount, note, totalSystems) {
 
     if (!isSupabaseConfigured() || !navigator.onLine) {
         return false;
@@ -5047,7 +5140,12 @@ async function publishSharedLabReport(labId, report, freeCount, note) {
                 id: report.id,
                 lab_id: labId,
                 status: report.status,
-                free_count: freeCount === "" ? null : Number(freeCount),
+                free_count: typeof report.freeSystems === "number"
+                    ? report.freeSystems
+                    : freeCount === ""
+                        ? null
+                        : Number(freeCount),
+                total_systems: report.totalSystems || totalSystems || null,
                 note: note || null,
                 created_at: new Date().toISOString()
             })
@@ -6766,6 +6864,20 @@ function resetLabReportForm() {
 
     document.getElementById("labNote").value = "";
 
+    document.getElementById("labAvailabilityMode").value = "qualitative";
+
+    document.getElementById("reportTotalSystems").value = "";
+
+    document.getElementById("reportFreeSystems").value = "";
+
+    document.getElementById("reportCalculatorResult").textContent =
+        "Enter total and free systems to calculate availability.";
+
+    document.getElementById("labQualitativeAvailability").textContent =
+        "Choose a qualitative status or enter exact systems.";
+
+    toggleLabAvailabilityMode();
+
     document.getElementById("totalSystems").value = "";
 
     document.getElementById("freeSystems").value = "";
@@ -6789,6 +6901,17 @@ function selectLabStatus(button) {
         });
 
     button.classList.add("selected");
+
+    const percentage =
+        qualitativeAvailabilityPercentages[selectedLabStatus];
+    const result =
+        document.getElementById("labQualitativeAvailability");
+
+    if (result) {
+        result.textContent = percentage === null
+            ? selectedLabStatus + " · Not applicable"
+            : selectedLabStatus + " · " + percentage + "% available";
+    }
 
 }
 
@@ -6869,25 +6992,125 @@ function getLabDisplayState(lab) {
     const uncertain =
         consensus.label === "Status uncertain" ||
         freshness === "very-stale";
+    const reportedPercent = getConsensusAvailabilityPercent(
+        lab,
+        leadingStatus,
+        uncertain
+    );
     const special =
-        leadingStatus === "Exam in Progress" ||
-        leadingStatus === "Closed";
+        !uncertain &&
+        (
+            leadingStatus === "Exam in Progress" ||
+            leadingStatus === "Closed"
+        );
+    const resolvedStatus =
+        leadingStatus === "Exact Availability"
+            ? getDisplayStatusFromExactPercent(reportedPercent)
+            : (leadingStatus || lab.status);
 
     return {
         status: confirmedClosure
             ? "Closed"
             : uncertain
             ? "Status uncertain"
-            : (leadingStatus || lab.status),
+            : resolvedStatus,
         confidence: uncertain
             ? "Low"
             : consensus.label === "Strong agreement"
                 ? "High"
                 : "Medium",
-        percent: special || uncertain || confirmedClosure ? null : lab.percent,
+        percent: special || confirmedClosure
+            ? null
+            : reportedPercent === null
+                ? lab.percent
+                : reportedPercent,
         freshness: freshness,
         consensus: consensus
     };
+
+}
+
+function getDisplayStatusFromExactPercent(percent) {
+
+    if (percent === null || percent === undefined) {
+        return "Status uncertain";
+    }
+
+    if (percent === 0) {
+        return "Full";
+    }
+
+    if (percent >= 75) {
+        return "Very Free";
+    }
+
+    if (percent >= 50) {
+        return "Free";
+    }
+
+    return "Busy";
+
+}
+
+function getReportAvailabilityPercent(report) {
+
+    if (typeof report.availabilityPercent === "number") {
+        return report.availabilityPercent;
+    }
+
+    if (
+        report.totalSystems > 0 &&
+        report.freeSystems >= 0 &&
+        report.freeSystems <= report.totalSystems
+    ) {
+        return Math.round(
+            (report.freeSystems / report.totalSystems) * 100
+        );
+    }
+
+    return report.availabilityMode === "qualitative" &&
+        Object.prototype.hasOwnProperty.call(
+            qualitativeAvailabilityPercentages,
+            report.status
+        )
+        ? qualitativeAvailabilityPercentages[report.status]
+        : null;
+
+}
+
+function getConsensusAvailabilityPercent(lab, leadingStatus, useAllReports) {
+
+    if (
+        !leadingStatus
+    ) {
+        return null;
+    }
+
+    const reports = lab.history.filter(report => {
+        const matchesStatus = useAllReports
+            ? true
+            : report.status === leadingStatus;
+
+        return matchesStatus &&
+            getReportAvailabilityPercent(report) !== null;
+    });
+
+    if (!reports.length) {
+        return null;
+    }
+
+    let weightedTotal = 0;
+    let totalWeight = 0;
+
+    reports.forEach(report => {
+        const weight = getReportWeight(report.minutesAgo);
+        weightedTotal += getReportAvailabilityPercent(report) * weight;
+        totalWeight += weight;
+    });
+
+    return totalWeight
+        ? Math.round(weightedTotal / totalWeight)
+        : null;
 
 }
 
@@ -7222,6 +7445,103 @@ function calculateSystems() {
 
 }
 
+function toggleLabAvailabilityMode() {
+
+    const mode = document.getElementById("labAvailabilityMode").value;
+    const exact = document.getElementById("labExactAvailability");
+    const quickStatusOptions =
+        document.getElementById("labQuickStatusOptions");
+    const quickStatusButtons =
+        document.querySelectorAll("#labQuickStatusOptions [data-lab-status]");
+    const qualitativeResult =
+        document.getElementById("labQualitativeAvailability");
+
+    exact.classList.toggle("hidden", mode !== "exact");
+    quickStatusOptions.classList.toggle("hidden", mode === "exact");
+
+    quickStatusButtons.forEach(button => {
+        button.disabled = mode === "exact";
+    });
+
+    if (mode === "exact") {
+        selectedLabStatus = null;
+        quickStatusButtons.forEach(button => {
+            button.classList.remove("selected");
+        });
+        qualitativeResult.textContent =
+            "Exact Availability mode · status is derived from the percentage.";
+    }
+
+    if (mode === "exact") {
+        calculateReportAvailability();
+    }
+
+}
+
+function getReportAvailabilityInput() {
+
+    const mode = document.getElementById("labAvailabilityMode").value;
+
+    if (mode !== "exact") {
+        return {
+            mode: "qualitative",
+            totalSystems: null,
+            freeSystems: null,
+            percentage: qualitativeAvailabilityPercentages[selectedLabStatus]
+        };
+    }
+
+    const totalInput = document.getElementById("reportTotalSystems").value;
+    const freeInput = document.getElementById("reportFreeSystems").value;
+    const totalSystems = Number(totalInput);
+    const freeSystems = Number(freeInput);
+    const result = document.getElementById("reportCalculatorResult");
+
+    if (
+        totalInput === "" ||
+        freeInput === "" ||
+        !Number.isFinite(totalSystems) ||
+        !Number.isFinite(freeSystems) ||
+        totalSystems <= 0 ||
+        freeSystems < 0 ||
+        freeSystems > totalSystems
+    ) {
+        if (result) {
+            result.textContent =
+                "Enter valid values: total systems must be greater than 0, and free systems must be between 0 and total.";
+        }
+        return null;
+    }
+
+    const percentage = Math.round(
+        (freeSystems / totalSystems) * 100
+    );
+
+    if (result) {
+        result.textContent =
+            percentage +
+            "% Available · " +
+            freeSystems +
+            " of " +
+            totalSystems +
+            " systems free";
+    }
+
+    return {
+        mode: "exact",
+        totalSystems: totalSystems,
+        freeSystems: freeSystems,
+        percentage: percentage
+    };
+
+}
+
+function calculateReportAvailability() {
+
+    return getReportAvailabilityInput();
+
+}
+
 /* =========================================================
    LAB REPORT SUBMISSION
    ========================================================= */
@@ -7232,7 +7552,9 @@ function submitLabReport() {
         return;
     }
 
-    if (!selectedLabStatus) {
+    const mode = document.getElementById("labAvailabilityMode").value;
+
+    if (mode === "qualitative" && !selectedLabStatus) {
 
         showToast(
             "Choose a lab status before submitting."
@@ -7251,12 +7573,26 @@ function submitLabReport() {
     const note =
         document.getElementById("labNote").value.trim();
 
+    const availability =
+        getReportAvailabilityInput();
+
+    if (!availability) {
+        showToast("Enter valid total and free system counts.");
+        return;
+    }
+
     const report = {
         id: makeClientId("lab-report"),
-        status: selectedLabStatus,
+        status: mode === "exact"
+            ? "Exact Availability"
+            : selectedLabStatus,
         minutesAgo: 0,
         freeCount: freeCount,
-        note: note
+        note: note,
+        availabilityMode: availability.mode,
+        totalSystems: availability.totalSystems,
+        freeSystems: availability.freeSystems,
+        availabilityPercent: availability.percentage
     };
 
     lab.history.unshift(report);
@@ -7274,7 +7610,8 @@ function submitLabReport() {
         currentLabId,
         report,
         freeCount,
-        note
+        note,
+        availability.totalSystems
     );
 
     /*
