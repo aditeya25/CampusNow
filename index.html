@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="campusnow-icon.svg" type="image/svg+xml">
+<script src="supabase-config.js" onerror="window.CAMPUSNOW_SUPABASE_CONFIG = window.CAMPUSNOW_SUPABASE_CONFIG || {};" ></script>
 <title>CampusNow | Know Before You Walk</title>
 
 <style>
@@ -4757,6 +4758,384 @@ const localStateKeys = {
     campusUpdateVotes: "campusnow-community-update-votes"
 };
 
+const supabaseConfig =
+    window.CAMPUSNOW_SUPABASE_CONFIG || {};
+
+function isSupabaseConfigured() {
+
+    return Boolean(
+        supabaseConfig.url &&
+        supabaseConfig.anonKey &&
+        !supabaseConfig.url.includes("YOUR_PROJECT") &&
+        !supabaseConfig.anonKey.includes("YOUR_SUPABASE")
+    );
+
+}
+
+function getSupabaseEndpoint(table, query = "") {
+
+    return supabaseConfig.url.replace(/\/$/, "") +
+        "/rest/v1/" +
+        table +
+        query;
+
+}
+
+async function supabaseRequest(table, query = "", options = {}) {
+
+    if (!isSupabaseConfigured() || !navigator.onLine) {
+        return null;
+    }
+
+    const response = await fetch(
+        getSupabaseEndpoint(table, query),
+        {
+            ...options,
+            headers: {
+                apikey: supabaseConfig.anonKey,
+                Authorization: "Bearer " + supabaseConfig.anonKey,
+                "Content-Type": "application/json",
+                ...(options.headers || {})
+            }
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("Supabase request failed: " + response.status);
+    }
+
+    if (response.status === 204) {
+        return [];
+    }
+
+    return response.json();
+
+}
+
+function makeClientId(prefix) {
+
+    return prefix + "-" +
+        Date.now() + "-" +
+        Math.random().toString(36).slice(2, 10);
+
+}
+
+function getMinutesSince(timestamp) {
+
+    if (!timestamp) {
+        return 0;
+    }
+
+    return Math.max(
+        0,
+        Math.round((Date.now() - new Date(timestamp).getTime()) / 60000)
+    );
+
+}
+
+async function syncSharedCampusUpdates() {
+
+    if (!isSupabaseConfigured() || !navigator.onLine) {
+        return;
+    }
+
+    try {
+        const updateRows = await supabaseRequest(
+            "campus_updates",
+            "?select=*&order=created_at.desc"
+        );
+        const reportRows = await supabaseRequest(
+            "campus_update_reports",
+            "?select=*&order=created_at.asc"
+        );
+
+        (updateRows || []).forEach(row => {
+            let update = getCommunityUpdateById(row.id);
+
+            if (!update) {
+                update = {
+                    id: row.id,
+                    type: row.type,
+                    date: row.date,
+                    time: row.time_text || "",
+                    title: row.title,
+                    details: row.details || "",
+                    reason: row.reason || "",
+                    note: row.note || "",
+                    location: row.location || "",
+                    labId: row.lab_id || "",
+                    createdAt: new Date(row.created_at).getTime(),
+                    updatedAt: new Date(row.updated_at || row.created_at).getTime(),
+                    minutesAgo: getMinutesSince(row.updated_at || row.created_at),
+                    reports: []
+                };
+                communityUpdates.push(update);
+            }
+        });
+
+        (reportRows || []).forEach(row => {
+            const update = getCommunityUpdateById(row.update_id);
+
+            if (!update || update.reports.some(report => report.id === row.id)) {
+                return;
+            }
+
+            update.reports.push({
+                id: row.id,
+                vote: row.vote,
+                minutesAgo: getMinutesSince(row.created_at),
+                local: false
+            });
+        });
+
+        renderCampusUpdates();
+        renderCommunityEventUpdates();
+        updateCampusContext();
+        updateCampus();
+    } catch (error) {
+        console.warn("CampusNow shared updates unavailable; using local data.", error);
+    }
+
+}
+
+async function publishSharedCampusUpdate(update) {
+
+    if (!isSupabaseConfigured() || !navigator.onLine) {
+        return false;
+    }
+
+    try {
+        await supabaseRequest("campus_updates", "", {
+            method: "POST",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+                id: update.id,
+                type: update.type,
+                date: update.date,
+                time_text: update.time || null,
+                title: update.title,
+                details: update.details || null,
+                reason: update.reason || null,
+                note: update.note || null,
+                location: update.location || null,
+                lab_id: update.labId || null,
+                created_at: new Date(update.createdAt).toISOString(),
+                updated_at: new Date(update.updatedAt).toISOString()
+            })
+        });
+        await publishSharedCampusVote(update.id, update.reports[0]);
+        return true;
+    } catch (error) {
+        console.warn("CampusNow update was kept local; shared insert failed.", error);
+        return false;
+    }
+
+}
+
+async function publishSharedCampusVote(updateId, report) {
+
+    if (!isSupabaseConfigured() || !navigator.onLine || !report) {
+        return false;
+    }
+
+    try {
+        await supabaseRequest("campus_update_reports", "", {
+            method: "POST",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+                id: report.id,
+                update_id: updateId,
+                vote: report.vote,
+                created_at: new Date().toISOString()
+            })
+        });
+        return true;
+    } catch (error) {
+        console.warn("CampusNow vote was kept local; shared insert failed.", error);
+        return false;
+    }
+
+}
+
+async function syncSharedLabAndPrintoutData() {
+
+    if (!isSupabaseConfigured() || !navigator.onLine) {
+        return;
+    }
+
+    try {
+        const labRows = await supabaseRequest(
+            "lab_reports",
+            "?select=*&order=created_at.asc"
+        );
+        const labConfirmationRows = await supabaseRequest(
+            "lab_confirmations",
+            "?select=*&order=created_at.asc"
+        );
+        const printoutRows = await supabaseRequest(
+            "printout_reports",
+            "?select=*&order=created_at.asc"
+        );
+        const printoutConfirmationRows = await supabaseRequest(
+            "printout_confirmations",
+            "?select=*&order=created_at.asc"
+        );
+
+        (labRows || []).forEach(row => {
+            const lab = labs[row.lab_id];
+
+            if (!lab || lab.history.some(report => report.id === row.id)) {
+                return;
+            }
+
+            lab.history.push({
+                id: row.id,
+                status: row.status,
+                minutesAgo: getMinutesSince(row.created_at),
+                freeCount: row.free_count,
+                note: row.note || ""
+            });
+            lab.reports += 1;
+            lab.minutesAgo = Math.min(
+                lab.minutesAgo,
+                getMinutesSince(row.created_at)
+            );
+        });
+
+        (labConfirmationRows || []).forEach(row => {
+            if (labs[row.lab_id]) {
+                labs[row.lab_id].confirmations += 1;
+            }
+        });
+
+        (printoutRows || []).forEach(row => {
+            if (printout.history.some(report => report.id === row.id)) {
+                return;
+            }
+
+            printout.history.push({
+                id: row.id,
+                status: row.status,
+                people: row.people,
+                minutesAgo: getMinutesSince(row.created_at)
+            });
+        });
+
+        (printoutConfirmationRows || []).forEach(() => {
+            printout.confirmations += 1;
+        });
+
+        refreshLabCards();
+        refreshPrintoutCard();
+    } catch (error) {
+        console.warn("CampusNow shared reports unavailable; using local data.", error);
+    }
+
+}
+
+async function publishSharedLabReport(labId, report, freeCount, note) {
+
+    if (!isSupabaseConfigured() || !navigator.onLine) {
+        return false;
+    }
+
+    try {
+        await supabaseRequest("lab_reports", "", {
+            method: "POST",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+                id: report.id,
+                lab_id: labId,
+                status: report.status,
+                free_count: freeCount === "" ? null : Number(freeCount),
+                note: note || null,
+                created_at: new Date().toISOString()
+            })
+        });
+        return true;
+    } catch (error) {
+        console.warn("Lab report was kept local; shared insert failed.", error);
+        return false;
+    }
+
+}
+
+async function publishSharedLabConfirmation(labId, stillAccurate) {
+
+    if (!isSupabaseConfigured() || !navigator.onLine) {
+        return false;
+    }
+
+    try {
+        await supabaseRequest("lab_confirmations", "", {
+            method: "POST",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+                id: makeClientId("lab-confirmation"),
+                lab_id: labId,
+                still_accurate: stillAccurate,
+                created_at: new Date().toISOString()
+            })
+        });
+        return true;
+    } catch (error) {
+        console.warn("Lab confirmation was kept local; shared insert failed.", error);
+        return false;
+    }
+
+}
+
+async function publishSharedPrintoutReport(report, note, lunch) {
+
+    if (!isSupabaseConfigured() || !navigator.onLine) {
+        return false;
+    }
+
+    try {
+        await supabaseRequest("printout_reports", "", {
+            method: "POST",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+                id: report.id,
+                status: report.status,
+                people: report.people,
+                lunch: lunch,
+                note: note || null,
+                created_at: new Date().toISOString()
+            })
+        });
+        return true;
+    } catch (error) {
+        console.warn("Printout report was kept local; shared insert failed.", error);
+        return false;
+    }
+
+}
+
+async function publishSharedPrintoutConfirmation(stillAccurate) {
+
+    if (!isSupabaseConfigured() || !navigator.onLine) {
+        return false;
+    }
+
+    try {
+        await supabaseRequest("printout_confirmations", "", {
+            method: "POST",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+                id: makeClientId("printout-confirmation"),
+                still_accurate: stillAccurate,
+                created_at: new Date().toISOString()
+            })
+        });
+        return true;
+    } catch (error) {
+        console.warn("Printout confirmation was kept local; shared insert failed.", error);
+        return false;
+    }
+
+}
+
 let lastRefreshAt = null;
 
 let refreshTimer = null;
@@ -5022,6 +5401,9 @@ function loadCommunityUpdates() {
                     Math.round((Date.now() - update.updatedAt) / 60000)
                 );
             }
+            update.reports.forEach(report => {
+                report.id = report.id || makeClientId("campus-report");
+            });
             communityUpdates.push(update);
         }
     });
@@ -5306,6 +5688,7 @@ function submitCampusUpdate() {
         minutesAgo: 0,
         reports: [
             {
+                id: makeClientId("campus-report"),
                 vote: "support",
                 minutesAgo: 0,
                 local: true
@@ -5315,6 +5698,7 @@ function submitCampusUpdate() {
 
     communityUpdates.unshift(update);
     saveCommunityUpdates();
+    publishSharedCampusUpdate(update);
     renderCampusUpdates();
     renderCommunityEventUpdates();
     closeModal("campusUpdateModal");
@@ -5340,6 +5724,7 @@ function voteOnCampusUpdate(support) {
     }
 
     update.reports.push({
+        id: makeClientId("campus-report"),
         vote: support ? "support" : "conflict",
         minutesAgo: 0,
         local: true
@@ -5350,6 +5735,7 @@ function voteOnCampusUpdate(support) {
 
     writeLocalState(localStateKeys.campusUpdateVotes, votes);
     saveCommunityUpdates();
+    publishSharedCampusVote(update.id, update.reports[update.reports.length - 1]);
     renderCampusUpdates();
     renderCommunityEventUpdates();
     openCampusUpdate(update.id);
@@ -5786,6 +6172,8 @@ function refreshCampusData() {
     updateSnapshot();
     updateCampusContext();
     updateRefreshNote();
+    syncSharedCampusUpdates();
+    syncSharedLabAndPrintoutData();
 
 }
 
@@ -6863,13 +7251,15 @@ function submitLabReport() {
     const note =
         document.getElementById("labNote").value.trim();
 
-    lab.history.unshift({
-
+    const report = {
+        id: makeClientId("lab-report"),
         status: selectedLabStatus,
+        minutesAgo: 0,
+        freeCount: freeCount,
+        note: note
+    };
 
-        minutesAgo: 0
-
-    });
+    lab.history.unshift(report);
 
     lab.history =
         lab.history.slice(0, 12);
@@ -6879,6 +7269,13 @@ function submitLabReport() {
     lab.minutesAgo = 0;
 
     lab.confirmations = 0;
+
+    publishSharedLabReport(
+        currentLabId,
+        report,
+        freeCount,
+        note
+    );
 
     /*
        This is intentionally a demo behavior.
@@ -6913,12 +7310,15 @@ function confirmLab(stillAccurate) {
 
         lab.confirmations += 1;
         lab.minutesAgo = 0;
+        publishSharedLabConfirmation(currentLabId, true);
 
         showToast(
             "Thanks. Your confirmation was recorded for this demo."
         );
 
     } else {
+
+        publishSharedLabConfirmation(currentLabId, false);
 
         showToast(
             "Thanks. You can submit a changed status below."
@@ -7289,15 +7689,14 @@ function submitPrintoutReport() {
             "printoutNote"
         ).value.trim();
 
-    printout.history.unshift({
-
+    const report = {
+        id: makeClientId("printout-report"),
         status: selectedQueueStatus,
-
         people: people,
-
         minutesAgo: 0
+    };
 
-    });
+    printout.history.unshift(report);
 
     printout.history =
         printout.history.slice(0, 12);
@@ -7307,6 +7706,8 @@ function submitPrintoutReport() {
     if (lunch !== "unknown") {
         printout.lunch = lunch;
     }
+
+    publishSharedPrintoutReport(report, note, lunch);
 
     printout.confirmations = 0;
 
@@ -7336,12 +7737,15 @@ function confirmPrintout(stillAccurate) {
 
         printout.confirmations += 1;
         printout.minutesAgo = 0;
+        publishSharedPrintoutConfirmation(true);
 
         showToast(
             "Thanks. Your printout confirmation was recorded."
         );
 
     } else {
+
+        publishSharedPrintoutConfirmation(false);
 
         showToast(
             "Thanks. Submit the changed queue status below."
@@ -7992,6 +8396,10 @@ document.addEventListener(
         renderCampusUpdates();
 
         renderCommunityEventUpdates();
+
+        syncSharedCampusUpdates();
+
+        syncSharedLabAndPrintoutData();
 
         startTimetable();
 
